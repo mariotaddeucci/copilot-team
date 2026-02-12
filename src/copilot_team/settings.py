@@ -1,6 +1,6 @@
-from pydantic import (
-    BaseModel,
-)
+from pathlib import Path
+
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +20,7 @@ class TaskExecutorAgent(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="my_prefix_")
+    workdir: Path = Path("./.copilot-workdir")
 
     story_agent: StoryAgent = StoryAgent()
     task_planner_agent: TaskPlannerAgent = TaskPlannerAgent()

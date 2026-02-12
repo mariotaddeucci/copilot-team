@@ -1,11 +1,10 @@
 import json
 import sqlite3
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Literal
+from uuid import uuid4
 
-from pydantic import BaseModel, Field
-from ulid import ULID
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class TaskChecklistItem(BaseModel):
@@ -13,21 +12,44 @@ class TaskChecklistItem(BaseModel):
     completed: bool = False
 
 
-class Task(BaseModel):
-    id: str = Field(default_factory=lambda: str(ULID()))
-    category: Literal["story", "task"] = "task"
-    depends_on: list["Task"] = Field(default_factory=list)
-    name: str | None = None
-    status: Literal["created", "planning", "enqueued", "in_progress", "completed"] = (
-        "created"
-    )
+StoryStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
+TaskStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
+
+
+class Story(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    name: str
     description: str
-    checklist: list[TaskChecklistItem] | None = None
-    started_at: datetime | None = None
-    finished_at: datetime | None = None
+    status: StoryStatus = "created"
+
+
+class Task(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    name: str
+    agent: str | None = None
+    status: TaskStatus = "created"
+    description: str
+    checklist: list[TaskChecklistItem] = Field(default_factory=list)
+    repository_url: HttpUrl | None = None
+    branch_name: str | None = None
+    story_id: str | None = None
 
 
 class TaskNotFoundError(Exception): ...
+
+
+class StoryNotFoundError(Exception): ...
+
+
+class BaseStoryStoreBackend(ABC):
+    @abstractmethod
+    def put_story(self, story: Story) -> None: ...
+
+    @abstractmethod
+    def get_story(self, id: str) -> Story: ...
+
+    @abstractmethod
+    def list_stories(self, status: str | None = None) -> list[Story]: ...
 
 
 class BaseTaskStoreBackend(ABC):
@@ -38,18 +60,71 @@ class BaseTaskStoreBackend(ABC):
     def get_task(self, id: str) -> Task: ...
 
     @abstractmethod
-    def list_tasks(self, status: str | None = None) -> list[Task]: ...
+    def list_tasks(
+        self, status: str | None = None, story_id: str | None = None
+    ) -> list[Task]: ...
 
     def get_next_task(self, status: str) -> Task | None:
         next_task = next(
-            (
-                task
-                for task in self.list_tasks(status=status)
-                if all([dep.status == "completed" for dep in task.depends_on])
-            ),
+            (task for task in self.list_tasks(status=status)),
             None,
         )
         return next_task
+
+
+class SqliteStoryStoreBackend(BaseStoryStoreBackend):
+    def __init__(self, conn: sqlite3.Connection) -> None:
+        self.conn = conn
+        self.conn.row_factory = sqlite3.Row
+        self._create_tables()
+
+    def _create_tables(self) -> None:
+        self.conn.executescript("""
+            CREATE TABLE IF NOT EXISTS story (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'created'
+            );
+        """)
+
+    def _row_to_story(self, row: sqlite3.Row) -> Story:
+        return Story(
+            id=row["id"],
+            name=row["name"],
+            description=row["description"],
+            status=row["status"],
+        )
+
+    def put_story(self, story: Story) -> None:
+        self.conn.execute(
+            """
+            INSERT INTO story (id, name, description, status)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                description = excluded.description,
+                status = excluded.status
+            """,
+            (story.id, story.name, story.description, story.status),
+        )
+        self.conn.commit()
+
+    def get_story(self, id: str) -> Story:
+        cursor = self.conn.execute("SELECT * FROM story WHERE id = ?", (id,))
+        row = cursor.fetchone()
+        if row is None:
+            raise StoryNotFoundError(f"Story with id '{id}' not found")
+        return self._row_to_story(row)
+
+    def list_stories(self, status: str | None = None) -> list[Story]:
+        if status:
+            cursor = self.conn.execute(
+                "SELECT * FROM story WHERE status = ?", (status,)
+            )
+        else:
+            cursor = self.conn.execute("SELECT * FROM story")
+        return [self._row_to_story(row) for row in cursor.fetchall()]
 
 
 class SqliteTaskStoreBackend(BaseTaskStoreBackend):
@@ -63,57 +138,28 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
             CREATE TABLE IF NOT EXISTS task (
                 id TEXT PRIMARY KEY,
                 name TEXT,
-                category TEXT NOT NULL DEFAULT 'task',
                 status TEXT NOT NULL DEFAULT 'created',
                 description TEXT NOT NULL,
                 checklist TEXT,
-                started_at TEXT,
-                finished_at TEXT
-            );
-
-            CREATE TABLE IF NOT EXISTS task_dependency (
-                task_id TEXT NOT NULL,
-                depends_on_task_id TEXT NOT NULL,
-                PRIMARY KEY (task_id, depends_on_task_id),
-                FOREIGN KEY (task_id) REFERENCES task(id),
-                FOREIGN KEY (depends_on_task_id) REFERENCES task(id)
+                story_id TEXT,
+                FOREIGN KEY (story_id) REFERENCES story(id)
             );
         """)
 
-    def _row_to_task(self, row: sqlite3.Row, resolve_deps: bool = True) -> Task:
-        checklist = None
+    def _row_to_task(self, row: sqlite3.Row) -> Task:
+        checklist = []
         if row["checklist"]:
             checklist = [
                 TaskChecklistItem(**item) for item in json.loads(row["checklist"])
             ]
 
-        depends_on: list[Task] = []
-        if resolve_deps:
-            cursor = self.conn.execute(
-                "SELECT depends_on_task_id FROM task_dependency WHERE task_id = ?",
-                (row["id"],),
-            )
-            for dep_row in cursor.fetchall():
-                dep_task = self._get_task_by_id(
-                    dep_row["depends_on_task_id"], resolve_deps=False
-                )
-                if dep_task:
-                    depends_on.append(dep_task)
-
         return Task(
             id=row["id"],
             name=row["name"],
             status=row["status"],
-            category=row["category"],
             description=row["description"],
             checklist=checklist,
-            started_at=datetime.fromisoformat(row["started_at"])
-            if row["started_at"]
-            else None,
-            finished_at=datetime.fromisoformat(row["finished_at"])
-            if row["finished_at"]
-            else None,
-            depends_on=depends_on,
+            story_id=row["story_id"],
         )
 
     def _get_task_by_id(self, task_id: str, resolve_deps: bool = True) -> Task | None:
@@ -121,7 +167,7 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
         row = cursor.fetchone()
         if row is None:
             return None
-        return self._row_to_task(row, resolve_deps=resolve_deps)
+        return self._row_to_task(row)
 
     def put_task(self, task: Task) -> None:
         checklist_json = None
@@ -130,15 +176,14 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
 
         self.conn.execute(
             """
-            INSERT INTO task (id, name, category, status, description, checklist, started_at, finished_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO task (id, name, status, description, checklist, story_id)
+            VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,
                 status = excluded.status,
                 description = excluded.description,
                 checklist = excluded.checklist,
-                started_at = excluded.started_at,
-                finished_at = excluded.finished_at
+                story_id = excluded.story_id
             """,
             (
                 task.id,
@@ -146,18 +191,9 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
                 task.status,
                 task.description,
                 checklist_json,
-                task.started_at.isoformat() if task.started_at else None,
-                task.finished_at.isoformat() if task.finished_at else None,
+                task.story_id,
             ),
         )
-
-        self.conn.execute("DELETE FROM task_dependency WHERE task_id = ?", (task.id,))
-        for dep in task.depends_on:
-            self.conn.execute(
-                "INSERT INTO task_dependency (task_id, depends_on_task_id) VALUES (?, ?)",
-                (task.id, dep.id),
-            )
-
         self.conn.commit()
 
     def get_task(self, id: str) -> Task:
@@ -166,23 +202,22 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
             raise TaskNotFoundError(f"Task with id '{id}' not found")
         return task
 
-    def list_tasks(self, status: str | None = None) -> list[Task]:
+    def list_tasks(
+        self, status: str | None = None, story_id: str | None = None
+    ) -> list[Task]:
+        query = "SELECT * FROM task"
+        params: list[str] = []
+        conditions: list[str] = []
+
         if status:
-            cursor = self.conn.execute("SELECT * FROM task WHERE status = ?", (status,))
-        else:
-            cursor = self.conn.execute("SELECT * FROM task")
+            conditions.append("status = ?")
+            params.append(status)
+        if story_id:
+            conditions.append("story_id = ?")
+            params.append(story_id)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        cursor = self.conn.execute(query, params)
         return [self._row_to_task(row) for row in cursor.fetchall()]
-
-
-class InMemoryTaskStoreBackend(BaseTaskStoreBackend):
-    def __init__(self) -> None:
-        self._sqlite_backend = SqliteTaskStoreBackend(sqlite3.connect(":memory:"))
-
-    def put_task(self, task: Task) -> None:
-        return self._sqlite_backend.put_task(task)
-
-    def get_task(self, id: str) -> Task:
-        return self._sqlite_backend.get_task(id)
-
-    def list_tasks(self, status: str | None = None) -> list[Task]:
-        return self._sqlite_backend.list_tasks(status=status)
