@@ -1,0 +1,30 @@
+[project]
+name = "copilot-team"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Mario Taddeucci", email = "mariotaddeucci@gmx.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "github-copilot-sdk>=0.1.23",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "python-ulid>=3.1.0",
+]
+
+[project.scripts]
+copilot-team = "copilot_team:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pyrefly>=0.52.0",
+    "pytest>=9.0.2",
+    "ruff>=0.15.0",
+    "taskipy>=1.14.1",
+]
