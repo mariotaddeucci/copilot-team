@@ -1,0 +1,67 @@
+import importlib
+import logging
+from typing import Callable, Type, TypeVar
+
+from injector import Binder, Inject, Injector, Module, singleton
+
+from copilot_team.settings import Settings
+from copilot_team.tasks import BaseTaskStoreBackend
+
+
+def create_logger(settings: Inject[Settings]) -> logging.Logger:
+    logger = logging.getLogger(settings.app_name)
+    logger.setLevel(settings.logger.level)
+
+    stdout_handler = logging.StreamHandler()
+    stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler.addFilter(lambda record: record.levelno < logging.WARNING)
+    formatter = logging.Formatter(settings.logger.format)
+    stdout_handler.setFormatter(formatter)
+
+    stderr_handler = logging.StreamHandler()
+    stderr_handler.setLevel(logging.WARNING)
+    stderr_handler.setFormatter(formatter)
+
+    logger.addHandler(stdout_handler)
+    logger.addHandler(stderr_handler)
+    return logger
+
+
+TImplType = TypeVar("TImplType", bound=Type)
+
+
+def create_factory(
+    implementation_name: str, desired_type: TImplType
+) -> Callable[..., TImplType]:
+    def factory(settings: Inject[Settings], injector: Inject[Injector]) -> TImplType:
+        impl_path = getattr(settings.core.implementations, implementation_name)
+        module, cls = impl_path.rsplit(".", 1)
+        module = importlib.import_module(module)
+        task_store_class = getattr(module, cls)
+        if not issubclass(task_store_class, desired_type):
+            raise ValueError(
+                f"{impl_path} is not a subclass of {desired_type.__name__}"
+            )
+        return injector.create_object(task_store_class)
+
+    return factory
+
+
+class Dependencies(Module):
+    def configure(self, binder: Binder):
+        binder.bind(Settings, scope=singleton)
+        binder.bind(logging.Logger, to=create_logger, scope=singleton)
+        binder.bind(
+            BaseTaskStoreBackend,
+            to=create_factory("task_store", BaseTaskStoreBackend),
+            scope=singleton,
+        )
+
+
+def create_injector(*, modules: list[Module] | None = None) -> Injector:
+    injector = Injector(modules=[Dependencies()])
+    injector.binder.bind(Injector, to=injector)
+    if modules:
+        injector = Injector(modules=modules, parent=injector)
+
+    return injector

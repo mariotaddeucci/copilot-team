@@ -13,7 +13,7 @@ class CopilotClientFactory:
     def __init__(self, settings: Settings):
         self._settings = settings
 
-    def create(self) -> CopilotClient:
+    def get(self) -> CopilotClient:
         return CopilotClient({"auto_restart": True, "auto_start": True})
 
 
@@ -22,11 +22,13 @@ class AgentTaskRunner:
         self,
         agent_store_backend: BaseAgentStoreBackend,
         repository_manager: RepositoryManager,
+        copilot_client_factory: CopilotClientFactory,
         settings: Settings,
     ):
         self._agent_store_backend = agent_store_backend
         self._repository_manager = repository_manager
         self._settings = settings
+        self._copilot_client_factory = copilot_client_factory
 
     @property
     def _tmp_dir(self) -> Path:
@@ -55,7 +57,7 @@ class AgentTaskRunner:
         agent = self._get_agent_for_task(task)
         model = agent.model or self._settings.task_executor_agent.default_model
         workdir = self._get_workdir_for_task(task)
-        client = CopilotClient({"auto_restart": True, "auto_start": True})
+        client = self._copilot_client_factory.get()
         session = await client.create_session(
             {
                 "model": model,
@@ -88,23 +90,18 @@ class AgentTaskRunner:
         await session.destroy()
 
 
-class TeamManagerService:
+class AgentStoryTaskPlanner:
     def __init__(
         self,
-        task_planner: BaseTaskPlanner,
-        task_store_backend: BaseTaskStoreBackend,
+        agent_store_backend: BaseAgentStoreBackend,
+        repository_manager: RepositoryManager,
+        copilot_client_factory: CopilotClientFactory,
         settings: Settings,
     ):
-        self._tasks = task_store_backend
-        self._agents = agent_store_backend
+        self._agent_store_backend = agent_store_backend
+        self._repository_manager = repository_manager
         self._settings = settings
-        self._planner = task_planner
+        self._copilot_client_factory = copilot_client_factory
 
-    def plan_task(self, task: Task) -> None:
-        task.status = "planning"
-        self._tasks.put_task(task)
-        task = self._planner.execute(task)
+    async def plan(self, story_id: str) -> list[Task]:
 
-    def execute(self, task: Task) -> None:
-        task.status = "in_progress"
-        self._tasks.put_task(task)

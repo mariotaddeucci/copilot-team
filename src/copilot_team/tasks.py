@@ -41,7 +41,7 @@ class TaskNotFoundError(Exception): ...
 class StoryNotFoundError(Exception): ...
 
 
-class BaseStoryStoreBackend(ABC):
+class BaseStoreBackend(ABC):
     @abstractmethod
     def put_story(self, story: Story) -> None: ...
 
@@ -51,8 +51,6 @@ class BaseStoryStoreBackend(ABC):
     @abstractmethod
     def list_stories(self, status: str | None = None) -> list[Story]: ...
 
-
-class BaseTaskStoreBackend(ABC):
     @abstractmethod
     def put_task(self, task: Task) -> None: ...
 
@@ -72,7 +70,7 @@ class BaseTaskStoreBackend(ABC):
         return next_task
 
 
-class SqliteStoryStoreBackend(BaseStoryStoreBackend):
+class SqliteStoreBackend(BaseStoreBackend):
     def __init__(self, conn: sqlite3.Connection) -> None:
         self.conn = conn
         self.conn.row_factory = sqlite3.Row
@@ -85,6 +83,18 @@ class SqliteStoryStoreBackend(BaseStoryStoreBackend):
                 name TEXT NOT NULL,
                 description TEXT NOT NULL,
                 status TEXT NOT NULL DEFAULT 'created'
+            );
+        """)
+
+        self.conn.executescript("""
+            CREATE TABLE IF NOT EXISTS task (
+                id TEXT PRIMARY KEY,
+                name TEXT,
+                status TEXT NOT NULL DEFAULT 'created',
+                description TEXT NOT NULL,
+                checklist TEXT,
+                story_id TEXT,
+                FOREIGN KEY (story_id) REFERENCES story(id)
             );
         """)
 
@@ -125,26 +135,6 @@ class SqliteStoryStoreBackend(BaseStoryStoreBackend):
         else:
             cursor = self.conn.execute("SELECT * FROM story")
         return [self._row_to_story(row) for row in cursor.fetchall()]
-
-
-class SqliteTaskStoreBackend(BaseTaskStoreBackend):
-    def __init__(self, conn: sqlite3.Connection) -> None:
-        self.conn = conn
-        self.conn.row_factory = sqlite3.Row
-        self._create_tables()
-
-    def _create_tables(self) -> None:
-        self.conn.executescript("""
-            CREATE TABLE IF NOT EXISTS task (
-                id TEXT PRIMARY KEY,
-                name TEXT,
-                status TEXT NOT NULL DEFAULT 'created',
-                description TEXT NOT NULL,
-                checklist TEXT,
-                story_id TEXT,
-                FOREIGN KEY (story_id) REFERENCES story(id)
-            );
-        """)
 
     def _row_to_task(self, row: sqlite3.Row) -> Task:
         checklist = []
