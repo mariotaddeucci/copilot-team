@@ -1,0 +1,91 @@
+Screen {
+    align: center middle;
+}
+
+#tree-view {
+    width: 100%;
+    height: 1fr;
+    padding: 1 2;
+}
+
+#tree-view Tree {
+    width: 100%;
+    height: 1fr;
+}
+
+#tree-buttons {
+    dock: bottom;
+    height: auto;
+    padding: 1 2;
+    layout: horizontal;
+}
+
+#tree-buttons Button {
+    margin: 0 1;
+}
+
+#story-form, #task-form {
+    width: 80%;
+    max-width: 100;
+    height: auto;
+    padding: 2 4;
+    border: thick $accent;
+    background: $surface;
+}
+
+#story-form Label, #task-form Label {
+    margin-top: 1;
+}
+
+#story-form Input, #task-form Input {
+    width: 100%;
+}
+
+#story-form TextArea, #task-form TextArea {
+    width: 100%;
+    height: 6;
+}
+
+#story-form Select, #task-form Select {
+    width: 100%;
+}
+
+.form-buttons {
+    margin-top: 2;
+    layout: horizontal;
+    height: auto;
+}
+
+.form-buttons Button {
+    margin: 0 1;
+}
+
+#chat-container {
+    width: 100%;
+    height: 1fr;
+    layout: vertical;
+}
+
+#chat-log {
+    width: 100%;
+    height: 1fr;
+    padding: 1 2;
+    border: tall $accent;
+    overflow-y: auto;
+}
+
+#chat-input-bar {
+    dock: bottom;
+    height: auto;
+    padding: 1 2;
+    layout: horizontal;
+}
+
+#chat-input {
+    width: 1fr;
+}
+
+#chat-send {
+    width: auto;
+    margin-left: 1;
+}

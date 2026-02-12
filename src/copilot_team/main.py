@@ -20,7 +20,11 @@ def setup():
 
 
 def main():
-    print("Setting up...")
+    from copilot_team.tui.app import CopilotTeamApp
+
+    task_store = injector.get(BaseTaskStoreBackend)
+    app = CopilotTeamApp(task_store=task_store)
+    app.run()
 
 
 if __name__ == "__main__":
