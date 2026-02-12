@@ -1,78 +1,19 @@
 import json
 import sqlite3
-from abc import ABC, abstractmethod
-from typing import Literal
-from uuid import uuid4
 
-from pydantic import BaseModel, Field, HttpUrl
+from injector import Inject
 
-
-class TaskChecklistItem(BaseModel):
-    description: str
-    completed: bool = False
-
-
-StoryStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
-TaskStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
-
-
-class Story(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
-    description: str
-    status: StoryStatus = "created"
-
-
-class Task(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
-    agent: str | None = None
-    status: TaskStatus = "created"
-    description: str
-    checklist: list[TaskChecklistItem] = Field(default_factory=list)
-    repository_url: HttpUrl | None = None
-    branch_name: str | None = None
-    story_id: str | None = None
-
-
-class TaskNotFoundError(Exception): ...
-
-
-class StoryNotFoundError(Exception): ...
-
-
-class BaseTaskStoreBackend(ABC):
-    @abstractmethod
-    def put_story(self, story: Story) -> None: ...
-
-    @abstractmethod
-    def get_story(self, id: str) -> Story: ...
-
-    @abstractmethod
-    def list_stories(self, status: str | None = None) -> list[Story]: ...
-
-    @abstractmethod
-    def put_task(self, task: Task) -> None: ...
-
-    @abstractmethod
-    def get_task(self, id: str) -> Task: ...
-
-    @abstractmethod
-    def list_tasks(
-        self, status: str | None = None, story_id: str | None = None
-    ) -> list[Task]: ...
-
-    def get_next_task(self, status: str) -> Task | None:
-        next_task = next(
-            (task for task in self.list_tasks(status=status)),
-            None,
-        )
-        return next_task
+from copilot_team.core.exceptions import StoryNotFoundError, TaskNotFoundError
+from copilot_team.core.interfaces import BaseTaskStoreBackend
+from copilot_team.core.models import Story, Task, TaskChecklistItem
+from copilot_team.core.settings import Settings
 
 
 class SqliteTaskStoreBackend(BaseTaskStoreBackend):
-    def __init__(self, conn: sqlite3.Connection) -> None:
-        self.conn = conn
+    def __init__(self, settings: Inject[Settings]) -> None:
+        db_path = settings.core.workdir / "task_store.db"
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
         self._create_tables()
 

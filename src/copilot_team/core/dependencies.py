@@ -2,10 +2,11 @@ import importlib
 import logging
 from typing import Callable, Type, TypeVar
 
+from copilot import CopilotClient
 from injector import Binder, Inject, Injector, Module, singleton
 
-from copilot_team.settings import Settings
-from copilot_team.tasks import BaseTaskStoreBackend
+from copilot_team.core.interfaces import BaseTaskStoreBackend
+from copilot_team.core.settings import Settings
 
 
 def create_logger(settings: Inject[Settings]) -> logging.Logger:
@@ -51,6 +52,11 @@ class Dependencies(Module):
     def configure(self, binder: Binder):
         binder.bind(Settings, scope=singleton)
         binder.bind(logging.Logger, to=create_logger, scope=singleton)
+        binder.bind(
+            CopilotClient,
+            to=lambda: CopilotClient({"auto_restart": True, "auto_start": True}),
+            scope=singleton,
+        )
         binder.bind(
             BaseTaskStoreBackend,
             to=create_factory("task_store", BaseTaskStoreBackend),

@@ -10,11 +10,13 @@ class LoggerSettings(BaseModel):
 
 
 class CoreImplementationSettings(BaseModel):
-    task_store: str = "copilot_team.tasks.SqliteTaskStoreBackend"
+    task_store: str = (
+        "copilot_team.backends.sqlite_task_store_backend.SqliteTaskStoreBackend"
+    )
 
 
 class CoreSettings(BaseModel):
-    workdir: Path = Path("/tmp/copilot-team")
+    workdir: Path = Field(default_factory=lambda: Path.cwd() / ".copilot_team")
     repositories: dict[str, HttpUrl] = Field(default_factory=dict)
     implementations: CoreImplementationSettings = CoreImplementationSettings()
 

@@ -3,13 +3,13 @@ from pathlib import Path
 
 import git
 
-from copilot_team.settings import Settings
+from copilot_team.core.settings import Settings
 
 
 class RepositoryManager:
     def __init__(self, settings: Settings):
-        self._repos_dir = settings.workdir / "repositories"
-        self._worktrees_dir = settings.workdir / "worktrees"
+        self._repos_dir = settings.core.workdir / "repositories"
+        self._worktrees_dir = settings.core.workdir / "worktrees"
         self._repos_dir.mkdir(parents=True, exist_ok=True)
         self._worktrees_dir.mkdir(parents=True, exist_ok=True)
 
