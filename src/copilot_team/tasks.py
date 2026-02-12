@@ -41,7 +41,7 @@ class TaskNotFoundError(Exception): ...
 class StoryNotFoundError(Exception): ...
 
 
-class BaseStoreBackend(ABC):
+class BaseTaskStoreBackend(ABC):
     @abstractmethod
     def put_story(self, story: Story) -> None: ...
 
@@ -70,7 +70,7 @@ class BaseStoreBackend(ABC):
         return next_task
 
 
-class SqliteStoreBackend(BaseStoreBackend):
+class SqliteTaskStoreBackend(BaseTaskStoreBackend):
     def __init__(self, conn: sqlite3.Connection) -> None:
         self.conn = conn
         self.conn.row_factory = sqlite3.Row
