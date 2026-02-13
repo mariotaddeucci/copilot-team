@@ -174,7 +174,9 @@ async def test_story_form_validation_empty_name(task_store: InMemoryTaskStoreBac
         assert app.query_one(StoryFormPanel)
 
 
-async def test_task_form_has_agent_and_repo_fields(task_store: InMemoryTaskStoreBackend):
+async def test_task_form_has_agent_and_repo_fields(
+    task_store: InMemoryTaskStoreBackend,
+):
     app = CopilotTeamApp(task_store=task_store)
     async with app.run_test(size=(160, 45)) as pilot:
         await pilot.pause()
@@ -272,6 +274,7 @@ async def test_settings_copilot_tab_has_limits(task_store: InMemoryTaskStoreBack
 
 async def test_settings_save_chat_model(task_store: InMemoryTaskStoreBackend):
     from copilot_team.core.settings import Settings
+
     settings = Settings()
     app = CopilotTeamApp(task_store=task_store, settings=settings)
     async with app.run_test(size=(160, 45)) as pilot:
@@ -287,6 +290,7 @@ async def test_settings_save_chat_model(task_store: InMemoryTaskStoreBackend):
 
 async def test_settings_save_copilot_limits(task_store: InMemoryTaskStoreBackend):
     from copilot_team.core.settings import Settings
+
     settings = Settings()
     app = CopilotTeamApp(task_store=task_store, settings=settings)
     async with app.run_test(size=(160, 45)) as pilot:

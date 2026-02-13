@@ -20,8 +20,12 @@ class ChatSettings(BaseModel):
 
 
 class CopilotSettings(BaseModel):
-    max_chat_sessions: int = Field(default=1, description="Limite de sessões concorrentes de chat")
-    max_background_agents: int = Field(default=2, description="Limite de agentes em background")
+    max_chat_sessions: int = Field(
+        default=1, description="Limite de sessões concorrentes de chat"
+    )
+    max_background_agents: int = Field(
+        default=2, description="Limite de agentes em background"
+    )
 
 
 class CoreSettings(BaseModel):

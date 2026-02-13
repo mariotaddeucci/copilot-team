@@ -122,9 +122,7 @@ class SubModelList(Vertical):
         self._render_items()
 
     def _render_items(self) -> None:
-        container = self.query_one(
-            f"#submodel-{self._field_name}-items", Vertical
-        )
+        container = self.query_one(f"#submodel-{self._field_name}-items", Vertical)
         container.remove_children()
         for idx, item in enumerate(self._items):
             row = Horizontal(classes="submodel-row")
@@ -268,9 +266,7 @@ class PydanticForm(Vertical):
                 continue
             yield from self._build_field(field_name, field_info)
 
-    def _build_field(
-        self, name: str, field_info: FieldInfo
-    ) -> ComposeResult:
+    def _build_field(self, name: str, field_info: FieldInfo) -> ComposeResult:
         annotation = field_info.annotation
         description = field_info.description or ""
         required = field_info.is_required()
@@ -299,7 +295,9 @@ class PydanticForm(Vertical):
             yield Label(f"{label_text}:")
             yield Select(
                 [(str(v), v) for v in values],
-                value=current_value if current_value is not None else (values[0] if values else Select.BLANK),
+                value=current_value
+                if current_value is not None
+                else (values[0] if values else Select.BLANK),
                 allow_blank=is_optional,
                 id=f"form-{name}",
             )
@@ -309,9 +307,7 @@ class PydanticForm(Vertical):
         is_model_list, submodel_cls = _is_list_of_model(unwrapped)
         if is_model_list and submodel_cls is not None:
             items = (
-                [item.model_copy() for item in current_value]
-                if current_value
-                else []
+                [item.model_copy() for item in current_value] if current_value else []
             )
             yield Label(f"{label_text}:")
             yield SubModelList(

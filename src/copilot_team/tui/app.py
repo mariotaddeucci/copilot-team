@@ -23,17 +23,13 @@ class Sidebar(Vertical):
             yield Static(
                 "  [bold]Tasks[/bold]", id="menu-tree", classes="menu-item active"
             )
-            yield Static(
-                "  [bold]Chat[/bold]", id="menu-chat", classes="menu-item"
-            )
+            yield Static("  [bold]Chat[/bold]", id="menu-chat", classes="menu-item")
             yield Static(
                 "  [bold]Settings[/bold]", id="menu-settings", classes="menu-item"
             )
         with Vertical(id="sidebar-activity"):
             yield Static("[bold] Activity[/bold]", id="activity-title")
-            yield Static(
-                "[dim]No background tasks[/dim]", id="activity-content"
-            )
+            yield Static("[dim]No background tasks[/dim]", id="activity-content")
 
 
 class CopilotTeamApp(App):

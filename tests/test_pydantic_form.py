@@ -26,8 +26,12 @@ class SubItem(BaseModel):
 
 class SampleModel(BaseModel):
     name: str = Field(description="The name")
-    bio: str = Field(description="Biography text", json_schema_extra={"widget": "textarea"})
-    role: Literal["admin", "user", "guest"] = Field(default="user", description="User role")
+    bio: str = Field(
+        description="Biography text", json_schema_extra={"widget": "textarea"}
+    )
+    role: Literal["admin", "user", "guest"] = Field(
+        default="user", description="User role"
+    )
     active: bool = Field(default=True, description="Is active")
     nickname: str | None = Field(default=None, description="Optional nickname")
     items: list[SubItem] = Field(default_factory=list, description="Related items")

@@ -19,7 +19,9 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
         settings.core.workdir.mkdir(parents=True, exist_ok=True)
         self._logger = logger
         self._conn: aiosqlite.Connection | None = None
-        self._logger.info("SqliteTaskStoreBackend initialized with db: %s", self._db_path)
+        self._logger.info(
+            "SqliteTaskStoreBackend initialized with db: %s", self._db_path
+        )
 
     async def _get_conn(self) -> aiosqlite.Connection:
         if self._conn is None:

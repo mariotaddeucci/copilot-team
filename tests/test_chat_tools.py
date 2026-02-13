@@ -40,7 +40,9 @@ async def test_get_story_tool(service: TaskService):
     assert result["name"] == "Auth"
 
 
-async def test_create_story_tool(service: TaskService, tools_store: InMemoryTaskStoreBackend):
+async def test_create_story_tool(
+    service: TaskService, tools_store: InMemoryTaskStoreBackend
+):
     tools = build_task_tools(service)
     create_story = next(t for t in tools if t.name == "create_story")
     result = await create_story.handler(
@@ -50,7 +52,9 @@ async def test_create_story_tool(service: TaskService, tools_store: InMemoryTask
     assert len(tools_store._stories) == 2
 
 
-async def test_update_story_tool(service: TaskService, tools_store: InMemoryTaskStoreBackend):
+async def test_update_story_tool(
+    service: TaskService, tools_store: InMemoryTaskStoreBackend
+):
     tools = build_task_tools(service)
     update_story = next(t for t in tools if t.name == "update_story")
     result = await update_story.handler({"id": "s1", "name": "Updated Auth"}, None)
@@ -82,7 +86,9 @@ async def test_get_task_tool(service: TaskService):
     assert result["name"] == "Login"
 
 
-async def test_create_task_tool(service: TaskService, tools_store: InMemoryTaskStoreBackend):
+async def test_create_task_tool(
+    service: TaskService, tools_store: InMemoryTaskStoreBackend
+):
     tools = build_task_tools(service)
     create_task = next(t for t in tools if t.name == "create_task")
     result = await create_task.handler(
@@ -92,11 +98,11 @@ async def test_create_task_tool(service: TaskService, tools_store: InMemoryTaskS
     assert len(tools_store._tasks) == 2
 
 
-async def test_update_task_tool(service: TaskService, tools_store: InMemoryTaskStoreBackend):
+async def test_update_task_tool(
+    service: TaskService, tools_store: InMemoryTaskStoreBackend
+):
     tools = build_task_tools(service)
     update_task = next(t for t in tools if t.name == "update_task")
-    result = await update_task.handler(
-        {"id": "t1", "status": "completed"}, None
-    )
+    result = await update_task.handler({"id": "t1", "status": "completed"}, None)
     assert result["status"] == "completed"
     assert tools_store._tasks["t1"].status == "completed"

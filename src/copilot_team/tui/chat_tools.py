@@ -59,7 +59,13 @@ def build_task_tools(service: TaskService) -> list:
                 "properties": {
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "planning", "ready", "in_progress", "completed"],
+                        "enum": [
+                            "pending",
+                            "planning",
+                            "ready",
+                            "in_progress",
+                            "completed",
+                        ],
                         "description": "Filter by story status",
                     },
                 },
@@ -85,10 +91,19 @@ def build_task_tools(service: TaskService) -> list:
                 "type": "object",
                 "properties": {
                     "name": {"type": "string", "description": "Story name"},
-                    "description": {"type": "string", "description": "Story description"},
+                    "description": {
+                        "type": "string",
+                        "description": "Story description",
+                    },
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "planning", "ready", "in_progress", "completed"],
+                        "enum": [
+                            "pending",
+                            "planning",
+                            "ready",
+                            "in_progress",
+                            "completed",
+                        ],
                         "description": "Story status",
                     },
                 },
@@ -107,7 +122,13 @@ def build_task_tools(service: TaskService) -> list:
                     "description": {"type": "string", "description": "New description"},
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "planning", "ready", "in_progress", "completed"],
+                        "enum": [
+                            "pending",
+                            "planning",
+                            "ready",
+                            "in_progress",
+                            "completed",
+                        ],
                         "description": "New status",
                     },
                 },
@@ -123,7 +144,13 @@ def build_task_tools(service: TaskService) -> list:
                 "properties": {
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "planning", "ready", "in_progress", "completed"],
+                        "enum": [
+                            "pending",
+                            "planning",
+                            "ready",
+                            "in_progress",
+                            "completed",
+                        ],
                         "description": "Filter by task status",
                     },
                     "story_id": {
@@ -153,15 +180,27 @@ def build_task_tools(service: TaskService) -> list:
                 "type": "object",
                 "properties": {
                     "name": {"type": "string", "description": "Task name"},
-                    "description": {"type": "string", "description": "Task description"},
+                    "description": {
+                        "type": "string",
+                        "description": "Task description",
+                    },
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "planning", "ready", "in_progress", "completed"],
+                        "enum": [
+                            "pending",
+                            "planning",
+                            "ready",
+                            "in_progress",
+                            "completed",
+                        ],
                         "description": "Task status",
                     },
                     "story_id": {"type": "string", "description": "Parent story id"},
                     "agent": {"type": "string", "description": "Assigned agent"},
-                    "repository_name": {"type": "string", "description": "Repository name"},
+                    "repository_name": {
+                        "type": "string",
+                        "description": "Repository name",
+                    },
                     "branch_name": {"type": "string", "description": "Branch name"},
                 },
                 "required": ["name", "description"],
@@ -179,12 +218,21 @@ def build_task_tools(service: TaskService) -> list:
                     "description": {"type": "string", "description": "New description"},
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "planning", "ready", "in_progress", "completed"],
+                        "enum": [
+                            "pending",
+                            "planning",
+                            "ready",
+                            "in_progress",
+                            "completed",
+                        ],
                         "description": "New status",
                     },
                     "story_id": {"type": "string", "description": "Parent story id"},
                     "agent": {"type": "string", "description": "Assigned agent"},
-                    "repository_name": {"type": "string", "description": "Repository name"},
+                    "repository_name": {
+                        "type": "string",
+                        "description": "Repository name",
+                    },
                     "branch_name": {"type": "string", "description": "Branch name"},
                 },
                 "required": ["id"],
