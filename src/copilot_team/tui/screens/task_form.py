@@ -28,7 +28,7 @@ class TaskFormPanel(Vertical):
 
     @property
     def task_service(self) -> TaskService:
-        return self.app.task_service  # type: ignore[attr-defined]
+        return self.app.task_service  #
 
     @property
     def _current_story_id(self) -> str | None:
@@ -67,7 +67,7 @@ class TaskFormPanel(Vertical):
         if btn_id == "btn-save":
             await self._save_task()
         elif btn_id == "btn-cancel":
-            self.app.action_show_tree()  # type: ignore[attr-defined]
+            self.app.action_show_tree()  #
 
     async def _save_task(self) -> None:
         form = self.query_one(PydanticForm)
@@ -89,4 +89,4 @@ class TaskFormPanel(Vertical):
 
         await self.task_service.save_task(task)
         self.app.notify(f"Task '{data['name']}' saved!", severity="information")
-        self.app.action_show_tree()  # type: ignore[attr-defined]
+        self.app.action_show_tree()  #

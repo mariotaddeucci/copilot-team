@@ -183,7 +183,7 @@ class TreeViewPanel(Vertical):
 
     @property
     def task_service(self) -> TaskService:
-        return self.app.task_service  # type: ignore[attr-defined]
+        return self.app.task_service  #
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree-toolbar"):
@@ -239,9 +239,9 @@ class TreeViewPanel(Vertical):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-new-story":
-            self.app.show_story_form()  # type: ignore[attr-defined]
+            self.app.show_story_form()  #
         elif event.button.id == "btn-new-task":
-            self.app.show_task_form()  # type: ignore[attr-defined]
+            self.app.show_task_form()  #
 
     def on_static_click(self, event: Static.Click) -> None:
         """Handle clicks on story headers, task rows, and checklist expansion."""
@@ -270,7 +270,7 @@ class TreeViewPanel(Vertical):
                 expanded = widget.toggle_checklist()
                 self._toggle_checklist_rows(widget, expanded)
             else:
-                self.app.show_task_form(task=task)  # type: ignore[attr-defined]
+                self.app.show_task_form(task=task)  #
 
     def _toggle_checklist_rows(self, task_row: TaskRow, show: bool) -> None:
         container = self.query_one("#stories-tree", VerticalScroll)

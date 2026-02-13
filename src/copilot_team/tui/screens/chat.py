@@ -38,15 +38,15 @@ class ChatPanel(Vertical):
 
     @property
     def _copilot_client(self) -> CopilotClient:
-        return self.app.copilot_client  # type: ignore[attr-defined]
+        return self.app.copilot_client  #
 
     @property
     def _task_service(self):
-        return self.app.task_service  # type: ignore[attr-defined]
+        return self.app.task_service  #
 
     @property
     def _settings(self):
-        return self.app.settings  # type: ignore[attr-defined]
+        return self.app.settings  #
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="chat-toolbar"):

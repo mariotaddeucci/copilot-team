@@ -27,7 +27,7 @@ class StoryFormPanel(Vertical):
 
     @property
     def task_service(self) -> TaskService:
-        return self.app.task_service  # type: ignore[attr-defined]
+        return self.app.task_service  #
 
     def compose(self) -> ComposeResult:
         yield PydanticForm(
@@ -43,7 +43,7 @@ class StoryFormPanel(Vertical):
         if event.button.id == "btn-save":
             await self._save_story()
         elif event.button.id == "btn-cancel":
-            self.app.action_show_tree()  # type: ignore[attr-defined]
+            self.app.action_show_tree()  #
 
     async def _save_story(self) -> None:
         form = self.query_one(PydanticForm)
@@ -61,4 +61,4 @@ class StoryFormPanel(Vertical):
 
         await self.task_service.save_story(story)
         self.app.notify(f"Story '{data['name']}' saved!", severity="information")
-        self.app.action_show_tree()  # type: ignore[attr-defined]
+        self.app.action_show_tree()  #

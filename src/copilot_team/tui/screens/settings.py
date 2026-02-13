@@ -32,7 +32,7 @@ class SettingsPanel(Vertical):
 
     @property
     def _settings(self) -> Settings:
-        return self.app.settings  # type: ignore[attr-defined]
+        return self.app.settings  #
 
     def compose(self) -> ComposeResult:
         yield Static("[bold] Settings[/bold]", id="settings-title")
@@ -57,7 +57,7 @@ class SettingsPanel(Vertical):
         elif btn_id == "settings-save":
             self._save_settings()
         elif btn_id == "settings-back":
-            self.app.action_show_tree()  # type: ignore[attr-defined]
+            self.app.action_show_tree()  #
 
     def _update_tab_styles(self) -> None:
         chat_btn = self.query_one("#settings-tab-chat", Button)
