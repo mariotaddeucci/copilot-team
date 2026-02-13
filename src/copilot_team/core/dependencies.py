@@ -63,11 +63,7 @@ class Dependencies(Module):
             to=create_factory("task_store", BaseTaskStoreBackend),
             scope=singleton,
         )
-        binder.bind(
-            TaskService,
-            to=lambda injector: TaskService(injector.get(BaseTaskStoreBackend)),
-            scope=singleton,
-        )
+        binder.bind(TaskService, scope=singleton)
 
 
 def create_injector(*, modules: list[Module] | None = None) -> Injector:

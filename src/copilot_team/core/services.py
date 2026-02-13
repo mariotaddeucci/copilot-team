@@ -7,6 +7,8 @@ paths.
 
 from __future__ import annotations
 
+from injector import Inject
+
 from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, StoryStatus, Task, TaskStatus
 
@@ -14,7 +16,7 @@ from copilot_team.core.models import Story, StoryStatus, Task, TaskStatus
 class TaskService:
     """High-level operations on stories and tasks."""
 
-    def __init__(self, task_store: BaseTaskStoreBackend) -> None:
+    def __init__(self, task_store: Inject[BaseTaskStoreBackend]) -> None:
         self._store = task_store
 
     # ── Stories ────────────────────────────────────────────
