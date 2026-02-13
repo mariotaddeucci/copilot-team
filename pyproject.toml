@@ -42,3 +42,6 @@ lint = "ruff check . && ruff format --check . && pyrefly check"
 fix = "ruff check --fix . && ruff format ."
 test = "pytest"
 
+[tool.pyrefly]
+search_path = ["src", "."]
+

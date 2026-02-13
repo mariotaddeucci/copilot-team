@@ -230,7 +230,9 @@ async def test_form_pre_populates_from_instance():
         assert app.query_one("#form-nickname", Input).value == "bobby"
         sub = app.query_one(SubModelList)
         assert len(sub.items) == 1
-        assert sub.items[0].title == "task1"
+        item = sub.items[0]
+        assert isinstance(item, SubItem)
+        assert item.title == "task1"
 
 
 # ── Required field label marker ──────────────────────────────────────────

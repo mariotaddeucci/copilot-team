@@ -5,6 +5,7 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Input, Label, Select, Static
 
 from copilot_team.core.settings import Settings
+from copilot_team.tui.messages import NavigateToTree
 
 AVAILABLE_MODELS = [
     ("Auto", "auto"),
@@ -26,13 +27,10 @@ class SettingsPanel(Vertical):
     }
     """
 
-    def __init__(self) -> None:
+    def __init__(self, settings: Settings) -> None:
         super().__init__()
+        self._settings = settings
         self._active_tab = "chat"
-
-    @property
-    def _settings(self) -> Settings:
-        return self.app.settings  #
 
     def compose(self) -> ComposeResult:
         yield Static("[bold] Settings[/bold]", id="settings-title")
@@ -57,7 +55,7 @@ class SettingsPanel(Vertical):
         elif btn_id == "settings-save":
             self._save_settings()
         elif btn_id == "settings-back":
-            self.app.action_show_tree()  #
+            self.post_message(NavigateToTree())
 
     def _update_tab_styles(self) -> None:
         chat_btn = self.query_one("#settings-tab-chat", Button)

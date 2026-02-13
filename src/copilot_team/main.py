@@ -1,13 +1,17 @@
 import asyncio
 
+from copilot import CopilotClient
+
 from copilot_team.core.dependencies import create_injector
 from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, Task, TaskChecklistItem
+from copilot_team.core.services import TaskService
+from copilot_team.core.settings import Settings
 
 injector = create_injector()
 
 
-async def setup():
+async def setup() -> None:
     task_store = injector.get(BaseTaskStoreBackend)
 
     # Stories
@@ -217,17 +221,14 @@ async def setup():
     )
 
 
-def main():
-    from copilot import CopilotClient
-
-    from copilot_team.core.settings import Settings
+def main() -> None:
     from copilot_team.tui.app import CopilotTeamApp
 
-    task_store = injector.get(BaseTaskStoreBackend)
+    task_service = injector.get(TaskService)
     copilot_client = injector.get(CopilotClient)
     settings = injector.get(Settings)
     app = CopilotTeamApp(
-        task_store=task_store,
+        task_service=task_service,
         copilot_client=copilot_client,
         settings=settings,
     )

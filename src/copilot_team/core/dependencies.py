@@ -1,6 +1,6 @@
 import importlib
 import logging
-from typing import Callable, Type, TypeVar
+from typing import Any, Callable
 
 from copilot import CopilotClient
 from injector import Binder, Inject, Injector, Module, singleton
@@ -29,22 +29,20 @@ def create_logger(settings: Inject[Settings]) -> logging.Logger:
     return logger
 
 
-TImplType = TypeVar("TImplType", bound=Type)
-
-
 def create_factory(
-    implementation_name: str, desired_type: TImplType
-) -> Callable[..., TImplType]:
-    def factory(settings: Inject[Settings], injector: Inject[Injector]) -> TImplType:
+    implementation_name: str,
+    desired_type: type,
+) -> Callable[..., Any]:
+    def factory(settings: Inject[Settings], injector: Inject[Injector]) -> Any:
         impl_path = getattr(settings.core.implementations, implementation_name)
-        module, cls = impl_path.rsplit(".", 1)
-        module = importlib.import_module(module)
-        task_store_class = getattr(module, cls)
-        if not issubclass(task_store_class, desired_type):
+        module_path, cls_name = impl_path.rsplit(".", 1)
+        module = importlib.import_module(module_path)
+        impl_class = getattr(module, cls_name)
+        if not issubclass(impl_class, desired_type):
             raise ValueError(
                 f"{impl_path} is not a subclass of {desired_type.__name__}"
             )
-        return injector.create_object(task_store_class)
+        return injector.create_object(impl_class)
 
     return factory
 

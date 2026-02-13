@@ -64,7 +64,9 @@ def _widget_hint(field_info: FieldInfo) -> str | None:
     """Read an optional ``widget`` hint stored in ``json_schema_extra``."""
     extra = field_info.json_schema_extra
     if isinstance(extra, dict):
-        return extra.get("widget")
+        value = extra.get("widget")
+        if isinstance(value, str):
+            return value
     return None
 
 
@@ -282,7 +284,8 @@ class PydanticForm(Vertical):
         elif field_info.default is not PydanticUndefined:
             current_value = field_info.default
         elif field_info.default_factory is not None:
-            current_value = field_info.default_factory()
+            factory: Any = field_info.default_factory
+            current_value = factory()
         else:
             current_value = None
 

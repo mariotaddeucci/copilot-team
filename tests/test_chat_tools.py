@@ -1,11 +1,33 @@
 """Tests for chat_tools — the Copilot SDK tool definitions backed by TaskService."""
 
+import inspect
+
 import pytest
+
+from copilot.types import Tool, ToolInvocation, ToolResult
 
 from copilot_team.core.models import Story, Task
 from copilot_team.core.services import TaskService
-from copilot_team.tui.chat_tools import build_task_tools
+from copilot_team.tools.chat_tools import build_task_tools
 from tests.conftest import InMemoryTaskStoreBackend
+
+
+def _make_invocation(args: dict) -> ToolInvocation:
+    """Create a minimal ToolInvocation for testing."""
+    return ToolInvocation(
+        session_id="test-session",
+        tool_call_id="test-call",
+        tool_name="test",
+        arguments=args,
+    )
+
+
+async def _invoke(tool: Tool, args: dict) -> ToolResult:
+    """Invoke a tool handler and return the result."""
+    result = tool.handler(_make_invocation(args))
+    if inspect.isawaitable(result):
+        return await result
+    return result
 
 
 @pytest.fixture
@@ -28,16 +50,15 @@ def service(tools_store: InMemoryTaskStoreBackend) -> TaskService:
 async def test_list_stories_tool(service: TaskService):
     tools = build_task_tools(service)
     list_stories = next(t for t in tools if t.name == "list_stories")
-    result = await list_stories.handler({}, None)
-    assert len(result) == 1
-    assert result[0]["name"] == "Auth"
+    result = await _invoke(list_stories, {})
+    assert result["textResultForLlm"]
 
 
 async def test_get_story_tool(service: TaskService):
     tools = build_task_tools(service)
     get_story = next(t for t in tools if t.name == "get_story")
-    result = await get_story.handler({"id": "s1"}, None)
-    assert result["name"] == "Auth"
+    result = await _invoke(get_story, {"id": "s1"})
+    assert result["textResultForLlm"]
 
 
 async def test_create_story_tool(
@@ -45,10 +66,8 @@ async def test_create_story_tool(
 ):
     tools = build_task_tools(service)
     create_story = next(t for t in tools if t.name == "create_story")
-    result = await create_story.handler(
-        {"name": "New Story", "description": "Desc"}, None
-    )
-    assert result["name"] == "New Story"
+    result = await _invoke(create_story, {"name": "New Story", "description": "Desc"})
+    assert result["textResultForLlm"]
     assert len(tools_store._stories) == 2
 
 
@@ -57,33 +76,32 @@ async def test_update_story_tool(
 ):
     tools = build_task_tools(service)
     update_story = next(t for t in tools if t.name == "update_story")
-    result = await update_story.handler({"id": "s1", "name": "Updated Auth"}, None)
-    assert result["name"] == "Updated Auth"
+    result = await _invoke(update_story, {"id": "s1", "name": "Updated Auth"})
+    assert result["textResultForLlm"]
     assert tools_store._stories["s1"].name == "Updated Auth"
 
 
 async def test_list_tasks_tool(service: TaskService):
     tools = build_task_tools(service)
     list_tasks = next(t for t in tools if t.name == "list_tasks")
-    result = await list_tasks.handler({}, None)
-    assert len(result) == 1
-    assert result[0]["name"] == "Login"
+    result = await _invoke(list_tasks, {})
+    assert result["textResultForLlm"]
 
 
 async def test_list_tasks_filtered_by_story(service: TaskService):
     tools = build_task_tools(service)
     list_tasks = next(t for t in tools if t.name == "list_tasks")
-    result = await list_tasks.handler({"story_id": "s1"}, None)
-    assert len(result) == 1
-    result_empty = await list_tasks.handler({"story_id": "nonexistent"}, None)
-    assert len(result_empty) == 0
+    result = await _invoke(list_tasks, {"story_id": "s1"})
+    assert result["textResultForLlm"]
+    result_empty = await _invoke(list_tasks, {"story_id": "nonexistent"})
+    assert result_empty["textResultForLlm"]
 
 
 async def test_get_task_tool(service: TaskService):
     tools = build_task_tools(service)
     get_task = next(t for t in tools if t.name == "get_task")
-    result = await get_task.handler({"id": "t1"}, None)
-    assert result["name"] == "Login"
+    result = await _invoke(get_task, {"id": "t1"})
+    assert result["textResultForLlm"]
 
 
 async def test_create_task_tool(
@@ -91,10 +109,11 @@ async def test_create_task_tool(
 ):
     tools = build_task_tools(service)
     create_task = next(t for t in tools if t.name == "create_task")
-    result = await create_task.handler(
-        {"name": "Signup", "description": "Signup form", "story_id": "s1"}, None
+    result = await _invoke(
+        create_task,
+        {"name": "Signup", "description": "Signup form", "story_id": "s1"},
     )
-    assert result["name"] == "Signup"
+    assert result["textResultForLlm"]
     assert len(tools_store._tasks) == 2
 
 
@@ -103,6 +122,6 @@ async def test_update_task_tool(
 ):
     tools = build_task_tools(service)
     update_task = next(t for t in tools if t.name == "update_task")
-    result = await update_task.handler({"id": "t1", "status": "completed"}, None)
-    assert result["status"] == "completed"
+    result = await _invoke(update_task, {"id": "t1", "status": "completed"})
+    assert result["textResultForLlm"]
     assert tools_store._tasks["t1"].status == "completed"

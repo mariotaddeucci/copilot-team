@@ -2,6 +2,7 @@ import pytest
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, Task, TaskChecklistItem
+from copilot_team.core.services import TaskService
 
 
 class InMemoryTaskStoreBackend(BaseTaskStoreBackend):
@@ -83,3 +84,8 @@ def task_store() -> InMemoryTaskStoreBackend:
     store._tasks[t1.id] = t1
     store._tasks[t2.id] = t2
     return store
+
+
+@pytest.fixture
+def task_service(task_store: InMemoryTaskStoreBackend) -> TaskService:
+    return TaskService(task_store)
