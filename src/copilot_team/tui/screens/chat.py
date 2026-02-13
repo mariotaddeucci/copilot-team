@@ -169,12 +169,10 @@ class ChatPanel(Vertical):
             log.write(f"[red]Error: {exc}[/red]")
 
     async def _ensure_session(self) -> None:
-        from copilot_team.tools.chat_tools import build_task_tools
+        from copilot_team.agents.tools.chat_tools import build_task_tools
 
         model = self._get_selected_model()
-        config = SessionConfig(
-            tools=build_task_tools(self._task_service),
-        )
+        config = SessionConfig(tools=build_task_tools(self._task_service))
         if model:
             config["model"] = model
         self._session = await self._copilot_client.create_session(config)

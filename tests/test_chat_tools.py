@@ -8,7 +8,7 @@ from copilot.types import Tool, ToolInvocation, ToolResult
 
 from copilot_team.core.models import Story, Task
 from copilot_team.core.services import TaskService
-from copilot_team.tools.chat_tools import build_task_tools
+from copilot_team.agents.tools.chat_tools import build_task_tools
 from tests.conftest import InMemoryTaskStoreBackend
 
 
