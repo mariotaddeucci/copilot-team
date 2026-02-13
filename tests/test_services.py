@@ -112,10 +112,15 @@ async def test_save_task(svc: TaskService, store: InMemoryTaskStoreBackend):
 
 def test_chat_service_enqueue_and_pop():
     chat = ChatService()
+    assert not chat.is_processing
     assert chat.enqueue_message("hello") is False
+    assert not chat.is_processing
     assert chat.enqueue_message("world") is True
+    assert not chat.is_processing
     assert chat.next_message() == "hello"
+    assert not chat.is_processing
     assert chat.next_message() == "world"
+    assert not chat.is_processing
     assert chat.next_message() is None
 
 
@@ -123,3 +128,6 @@ def test_chat_service_enqueue_while_processing():
     chat = ChatService()
     chat.set_processing(True)
     assert chat.enqueue_message("queued") is True
+    assert chat.next_message() == "queued"
+    chat.set_processing(False)
+    assert not chat.is_processing

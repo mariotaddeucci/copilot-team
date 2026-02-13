@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -33,7 +33,7 @@ class ChatPanel(Vertical):
 
     def __init__(self) -> None:
         super().__init__()
-        self._session = None
+        self._session: Any | None = None
         self._chat_service = ChatService()
 
     @property
@@ -57,7 +57,9 @@ class ChatPanel(Vertical):
                 id="chat-model-select",
             )
             yield Button("New Session", id="chat-new-session", variant="success")
-            yield Button("Recreate Session", id="chat-recreate-session", variant="default")
+            yield Button(
+                "Recreate Session", id="chat-recreate-session", variant="default"
+            )
         yield RichLog(id="chat-log", markup=True)
         with Horizontal(id="chat-input-bar"):
             yield Input(
@@ -119,19 +121,27 @@ class ChatPanel(Vertical):
         try:
             if self._session is None:
                 await self._ensure_session()
+            session = self._session
+            if session is None:
+                raise RuntimeError("Failed to create chat session.")
             done = asyncio.Event()
             response_parts: list[str] = []
             received_delta = False
+            wrote_assistant_label = False
 
             def handler(event):
-                nonlocal received_delta
+                nonlocal received_delta, wrote_assistant_label
                 if event.type == "assistant.message.delta":
                     response_parts.append(event.data.delta_content)
                     if event.data.delta_content:
                         received_delta = True
-                        log.write(
-                            f"[bold green]Assistant:[/bold green] {event.data.delta_content}"
-                        )
+                        if not wrote_assistant_label:
+                            log.write(
+                                f"[bold green]Assistant:[/bold green] {event.data.delta_content}"
+                            )
+                            wrote_assistant_label = True
+                        else:
+                            log.write(event.data.delta_content)
                 elif event.type == "assistant.message":
                     response_parts.clear()
                     response_parts.append(event.data.content)
@@ -141,23 +151,24 @@ class ChatPanel(Vertical):
                     response_parts.append(f"[red]Error: {event.data.message}[/red]")
                     done.set()
 
-            unsubscribe = self._session.on(handler)
+            unsubscribe = session.on(handler)
             try:
-                await self._session.send({"prompt": message, "mode": "enqueue"})
+                await session.send({"prompt": message, "mode": "enqueue"})
                 await asyncio.wait_for(done.wait(), timeout=120.0)
             except asyncio.TimeoutError:
                 log.write("[yellow]Response timed out.[/yellow]")
             finally:
                 unsubscribe()
 
-            if response_parts:
-                full = "".join(response_parts)
-                if not full:
-                    log.write("[dim]No response received.[/dim]")
-                elif not received_delta:
-                    log.write(f"[bold green]Assistant:[/bold green] {full}")
-            else:
+            if not response_parts:
                 log.write("[dim]No response received.[/dim]")
+                return
+
+            full = "".join(response_parts)
+            if not full:
+                log.write("[dim]No response received.[/dim]")
+            elif not received_delta:
+                log.write(f"[bold green]Assistant:[/bold green] {full}")
         except Exception as exc:
             log.write(f"[red]Error: {exc}[/red]")
 
@@ -165,7 +176,7 @@ class ChatPanel(Vertical):
         from copilot_team.tui.chat_tools import build_task_tools
 
         model = self._get_selected_model()
-        config: dict = {
+        config: dict[str, Any] = {
             "tools": build_task_tools(self._task_service),
         }
         if model:
