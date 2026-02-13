@@ -58,6 +58,7 @@ class CopilotTeamApp(App):
         self._show_panel(TreeViewPanel())
 
     def _show_panel(self, panel: Widget, title: str = "") -> None:
+        """Replace the content area with the given panel. If title is provided, update the page title."""
         content = self.query_one("#content-area", Container)
         content.remove_children()
         content.mount(panel)
@@ -65,11 +66,14 @@ class CopilotTeamApp(App):
             self.query_one("#page-title", Static).update(title)
 
     def _update_active_menu(self, active_id: str) -> None:
+        """Highlight the active menu item in the sidebar."""
+        from textual.css.query import NoMatches
+
         for item in self.query(".menu-item"):
             item.remove_class("active")
         try:
             self.query_one(f"#{active_id}").add_class("active")
-        except Exception:
+        except NoMatches:
             pass
 
     def action_show_tree(self) -> None:
@@ -105,6 +109,7 @@ class CopilotTeamApp(App):
         self._show_panel(TaskFormPanel(task=task))
 
     def on_click(self, event) -> None:
+        """Handle sidebar menu item clicks and dispatch to navigation actions."""
         widget = event.widget
         if hasattr(widget, "id") and widget.id:
             if widget.id == "menu-tree":
