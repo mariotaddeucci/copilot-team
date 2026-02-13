@@ -2,7 +2,7 @@ from functools import total_ordering
 from typing import Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 StoryStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
 TaskStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
@@ -45,7 +45,7 @@ class Task(BaseModel):
     status: TaskStatus = "created"
     description: str
     checklist: list[TaskChecklistItem] = Field(default_factory=list)
-    repository_url: HttpUrl | None = None
+    repository_name: str | None = None
     branch_name: str | None = None
     story_id: str | None = None
 
