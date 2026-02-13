@@ -1,27 +1,27 @@
-/* ── Dracula Theme Colors ─────────────────────────────── */
-/* Background: #282a36, Current Line: #44475a, Foreground: #f8f8f2 */
-/* Comment: #6272a4, Cyan: #8be9fd, Green: #50fa7b */
-/* Orange: #ffb86c, Pink: #ff79c6, Purple: #bd93f9 */
-/* Red: #ff5555, Yellow: #f1fa8c */
+/* ── Monokai Theme Colors ─────────────────────────────── */
+/* Background: #272822, Current Line: #3E3D32, Foreground: #F8F8F2 */
+/* Comment: #75715E, Cyan: #66D9EF, Green: #A6E22E */
+/* Orange: #FD971F, Pink: #F92672, Purple: #AE81FF */
+/* Red: #F92672, Yellow: #E6DB74 */
 
-$dracula-bg: #282a36;
-$dracula-bg-dark: #21222c;
-$dracula-current: #44475a;
-$dracula-fg: #f8f8f2;
-$dracula-comment: #6272a4;
-$dracula-cyan: #8be9fd;
-$dracula-green: #50fa7b;
-$dracula-orange: #ffb86c;
-$dracula-pink: #ff79c6;
-$dracula-purple: #bd93f9;
-$dracula-red: #ff5555;
-$dracula-yellow: #f1fa8c;
+$monokai-bg: #272822;
+$monokai-bg-dark: #1E1F1C;
+$monokai-current: #3E3D32;
+$monokai-fg: #F8F8F2;
+$monokai-comment: #75715E;
+$monokai-cyan: #66D9EF;
+$monokai-green: #A6E22E;
+$monokai-orange: #FD971F;
+$monokai-pink: #F92672;
+$monokai-purple: #AE81FF;
+$monokai-red: #F92672;
+$monokai-yellow: #E6DB74;
 
 /* ── Global ──────────────────────────────────────────── */
 
 Screen {
-    background: $dracula-bg-dark;
-    color: $dracula-fg;
+    background: $monokai-bg-dark;
+    color: $monokai-fg;
 }
 
 /* ── App Layout ──────────────────────────────────────── */
@@ -36,8 +36,8 @@ Screen {
 #sidebar {
     width: 22;
     height: 100%;
-    background: #1e1f29;
-    border-right: solid #2d303d;
+    background: #1B1C18;
+    border-right: solid #2E2F2A;
     padding: 1 0 0 0;
 }
 
@@ -49,17 +49,17 @@ Screen {
 .menu-item {
     padding: 0 1;
     height: 2;
-    color: $dracula-comment;
+    color: $monokai-comment;
 }
 
 .menu-item:hover {
-    background: $dracula-current;
-    color: $dracula-fg;
+    background: $monokai-current;
+    color: $monokai-fg;
 }
 
 .menu-item.active {
-    background: $dracula-current;
-    color: $dracula-purple;
+    background: $monokai-current;
+    color: $monokai-purple;
     text-style: bold;
 }
 
@@ -68,11 +68,11 @@ Screen {
     height: auto;
     max-height: 10;
     padding: 1 0;
-    border-top: solid #2d303d;
+    border-top: solid #2E2F2A;
 }
 
 #activity-title {
-    color: $dracula-comment;
+    color: $monokai-comment;
     height: 1;
     padding: 0 1;
 }
@@ -80,7 +80,7 @@ Screen {
 #activity-content {
     padding: 0 1;
     height: auto;
-    color: $dracula-comment;
+    color: $monokai-comment;
 }
 
 /* ── Content Area ────────────────────────────────────── */
@@ -98,7 +98,7 @@ Screen {
     height: 3;
     padding: 0 2;
     align: right middle;
-    background: $dracula-bg-dark;
+    background: $monokai-bg-dark;
 }
 
 #tree-spacer {
@@ -107,88 +107,99 @@ Screen {
 }
 
 #tree-toolbar Button {
-    min-width: 10;
+    min-width: 12;
     height: 1;
     margin: 0 0 0 1;
-    background: $dracula-pink;
-    color: $dracula-fg;
+    background: $monokai-green;
+    color: $monokai-bg-dark;
     border: none;
     text-style: bold;
     content-align: center middle;
 }
 
 #tree-toolbar Button:hover {
-    background: $dracula-purple;
-    color: $dracula-fg;
+    background: $monokai-cyan;
+    color: $monokai-bg-dark;
 }
 
 #table-header {
     height: 1;
     padding: 0 0;
-    background: $dracula-current;
-    color: $dracula-purple;
+    background: $monokai-current;
+    color: $monokai-purple;
     text-style: bold;
 }
 
 #stories-tree {
     height: 1fr;
     width: 100%;
-    background: $dracula-bg-dark;
+    background: $monokai-bg-dark;
     padding: 0;
-    scrollbar-color: $dracula-current;
-    scrollbar-color-hover: $dracula-comment;
-    scrollbar-color-active: $dracula-purple;
+    scrollbar-color: $monokai-current;
+    scrollbar-color-hover: $monokai-comment;
+    scrollbar-color-active: $monokai-purple;
 }
 
 .story-header {
     height: 1;
     padding: 0 0;
-    color: $dracula-fg;
-    background: #282a36;
+    color: $monokai-fg;
+    background: #272822;
 }
 
 .story-header:hover {
-    background: $dracula-current;
+    background: $monokai-current;
 }
 
 .task-row {
     height: 1;
     padding: 0 0;
-    color: $dracula-fg;
+    color: $monokai-fg;
     background: transparent;
 }
 
 .task-row:hover {
-    background: #2d303d;
+    background: #2E2F2A;
+}
+
+.checklist-tree-row {
+    height: 1;
+    padding: 0 0;
+    color: $monokai-comment;
+    background: transparent;
+}
+
+.checklist-tree-row:hover {
+    background: #2E2F2A;
 }
 
 /* ── Forms ────────────────────────────────────────────── */
 
 Label {
     margin-top: 1;
-    color: $dracula-comment;
+    color: $monokai-comment;
 }
 
 Input {
     width: 100%;
-    border: round $dracula-current;
-    background: $dracula-bg;
-    color: $dracula-fg;
+    border: round $monokai-current;
+    background: $monokai-bg;
+    color: $monokai-fg;
 }
 
 Input:focus {
-    border: round $dracula-purple;
+    border: round $monokai-purple;
 }
 
 TextArea {
     width: 100%;
     height: 5;
-    border: round $dracula-current;
-    background: $dracula-bg;
+    border: round $monokai-current;
+    background: $monokai-bg;
 }
 
 TextArea:focus {
-    border: round $dracula-purple;
+    border: round $monokai-purple;
 }
 
 Select {
@@ -196,12 +207,12 @@ Select {
 }
 
 SelectCurrent {
-    border: round $dracula-current;
-    background: $dracula-bg;
+    border: round $monokai-current;
+    background: $monokai-bg;
 }
 
 SelectCurrent:focus {
-    border: round $dracula-purple;
+    border: round $monokai-purple;
 }
 
 .form-buttons {
@@ -223,21 +234,25 @@ SelectCurrent:focus {
 }
 
 .checklist-row {
-    height: 3;
+    height: 1;
     padding: 0;
     layout: horizontal;
 }
 
 .checklist-row Checkbox {
     width: 1fr;
+    height: 1;
+    padding: 0;
+    border: none;
+    background: transparent;
 }
 
 .checklist-delete {
     width: 5;
     min-width: 5;
-    height: 3;
-    background: $dracula-red 20%;
-    color: $dracula-red;
+    height: 1;
+    background: $monokai-red 20%;
+    color: $monokai-red;
     border: none;
 }
 
@@ -259,38 +274,41 @@ SelectCurrent:focus {
 Button {
     border: none;
     content-align: center middle;
+    min-width: 10;
 }
 
 Button.-primary {
-    background: $dracula-pink;
-    color: $dracula-fg;
+    background: $monokai-green;
+    color: $monokai-bg-dark;
     text-style: bold;
     content-align: center middle;
 }
 
 Button.-primary:hover {
-    background: $dracula-purple;
+    background: $monokai-cyan;
+    color: $monokai-bg-dark;
 }
 
 Button.-error {
-    background: $dracula-current;
-    color: $dracula-comment;
+    background: $monokai-current;
+    color: $monokai-comment;
 }
 
 Button.-error:hover {
-    background: $dracula-red 40%;
-    color: $dracula-red;
+    background: $monokai-red 40%;
+    color: $monokai-red;
 }
 
 Button.-success {
-    background: $dracula-pink;
-    color: $dracula-fg;
+    background: $monokai-green;
+    color: $monokai-bg-dark;
     text-style: bold;
     content-align: center middle;
 }
 
 Button.-success:hover {
-    background: $dracula-purple;
+    background: $monokai-cyan;
+    color: $monokai-bg-dark;
 }
 
 /* ── Chat ─────────────────────────────────────────────── */
@@ -299,11 +317,11 @@ Button.-success:hover {
     width: 100%;
     height: 1fr;
     padding: 1 2;
-    border: round $dracula-current;
-    background: $dracula-bg;
-    scrollbar-color: $dracula-current;
-    scrollbar-color-hover: $dracula-comment;
-    scrollbar-color-active: $dracula-purple;
+    border: round $monokai-current;
+    background: $monokai-bg;
+    scrollbar-color: $monokai-current;
+    scrollbar-color-hover: $monokai-comment;
+    scrollbar-color-active: $monokai-purple;
 }
 
 #chat-input-bar {
@@ -324,15 +342,15 @@ Button.-success:hover {
 /* ── Footer ──────────────────────────────────────────── */
 
 Footer {
-    background: $dracula-bg;
-    color: $dracula-comment;
+    background: $monokai-bg;
+    color: $monokai-comment;
 }
 
 Footer > .footer--key {
-    background: $dracula-current;
-    color: $dracula-purple;
+    background: $monokai-current;
+    color: $monokai-purple;
 }
 
 Footer > .footer--description {
-    color: $dracula-fg;
+    color: $monokai-fg;
 }

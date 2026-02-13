@@ -51,7 +51,7 @@ def task_store() -> InMemoryTaskStoreBackend:
         id="s2",
         name="Dashboard",
         description="Main dashboard",
-        status="created",
+        status="pending",
     )
     store.put_story(s1)
     store.put_story(s2)

@@ -4,8 +4,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-StoryStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
-TaskStatus = Literal["created", "planning", "ready", "in_progress", "completed"]
+StoryStatus = Literal["pending", "planning", "ready", "in_progress", "completed"]
+TaskStatus = Literal["pending", "planning", "ready", "in_progress", "completed"]
 
 
 class TaskChecklistItem(BaseModel):
@@ -18,12 +18,12 @@ class Story(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     name: str
     description: str
-    status: StoryStatus = "created"
+    status: StoryStatus = "pending"
 
     @property
     def priority(self) -> int:
         status_priority = {
-            "created": 0,
+            "pending": 0,
             "planning": 1,
             "ready": 2,
             "in_progress": 3,
@@ -42,7 +42,7 @@ class Task(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     name: str
     agent: str | None = None
-    status: TaskStatus = "created"
+    status: TaskStatus = "pending"
     description: str
     checklist: list[TaskChecklistItem] = Field(default_factory=list)
     repository_name: str | None = None
@@ -52,7 +52,7 @@ class Task(BaseModel):
     @property
     def priority(self) -> int:
         status_priority = {
-            "created": 0,
+            "pending": 0,
             "planning": 1,
             "ready": 2,
             "in_progress": 3,

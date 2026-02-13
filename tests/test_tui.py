@@ -2,7 +2,7 @@ from copilot_team.tui.app import CopilotTeamApp
 from copilot_team.tui.screens.chat import ChatPanel
 from copilot_team.tui.screens.story_form import StoryFormPanel
 from copilot_team.tui.screens.task_form import TaskFormPanel
-from copilot_team.tui.screens.tree_view import TreeViewPanel, StoryHeader, TaskRow
+from copilot_team.tui.screens.tree_view import TreeViewPanel, StoryHeader, TaskRow, ChecklistRow
 from tests.conftest import InMemoryTaskStoreBackend
 
 from textual.widgets import Input, TextArea
@@ -56,7 +56,7 @@ async def test_tree_view_shows_status_icons(task_store: InMemoryTaskStoreBackend
         headers = list(app.query(StoryHeader))
         statuses = [h.story.status for h in headers]
         assert "in_progress" in statuses
-        assert "created" in statuses
+        assert "pending" in statuses
 
 
 async def test_tree_view_has_action_buttons(task_store: InMemoryTaskStoreBackend):
@@ -200,7 +200,7 @@ async def test_unassigned_tasks_section(task_store: InMemoryTaskStoreBackend):
     from copilot_team.core.models import Task
 
     task_store.put_task(
-        Task(id="orphan", name="Orphan Task", description="No story", status="created")
+        Task(id="orphan", name="Orphan Task", description="No story", status="pending")
     )
     app = CopilotTeamApp(task_store=task_store)
     async with app.run_test(size=(160, 45)) as pilot:
