@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from copilot import CopilotClient
+from copilot.types import SessionConfig
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Input, RichLog, Select
 
-from copilot_team.core.services import ChatService
-
-if TYPE_CHECKING:
-    from copilot import CopilotClient
+from copilot_team.core.services import ChatService, TaskService
+from copilot_team.core.settings import Settings
 
 AVAILABLE_MODELS = [
     ("Auto", "auto"),
@@ -31,22 +31,18 @@ class ChatPanel(Vertical):
     }
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        task_service: TaskService,
+        copilot_client: CopilotClient,
+        settings: Settings,
+    ) -> None:
         super().__init__()
+        self._task_service = task_service
+        self._copilot_client = copilot_client
+        self._settings = settings
         self._session: Any | None = None
         self._chat_service = ChatService()
-
-    @property
-    def _copilot_client(self) -> CopilotClient:
-        return self.app.copilot_client  #
-
-    @property
-    def _task_service(self):
-        return self.app.task_service  #
-
-    @property
-    def _settings(self):
-        return self.app.settings  #
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="chat-toolbar"):
@@ -129,7 +125,7 @@ class ChatPanel(Vertical):
             received_delta = False
             wrote_assistant_label = False
 
-            def handler(event):
+            def handler(event: Any) -> None:
                 nonlocal received_delta, wrote_assistant_label
                 if event.type == "assistant.message.delta":
                     response_parts.append(event.data.delta_content)
@@ -173,12 +169,10 @@ class ChatPanel(Vertical):
             log.write(f"[red]Error: {exc}[/red]")
 
     async def _ensure_session(self) -> None:
-        from copilot_team.tui.chat_tools import build_task_tools
+        from copilot_team.agents.tools.chat_tools import build_task_tools
 
         model = self._get_selected_model()
-        config: dict[str, Any] = {
-            "tools": build_task_tools(self._task_service),
-        }
+        config = SessionConfig(tools=build_task_tools(self._task_service))
         if model:
             config["model"] = model
         self._session = await self._copilot_client.create_session(config)

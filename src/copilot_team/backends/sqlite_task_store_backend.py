@@ -34,7 +34,7 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
 
     async def _create_tables(self) -> None:
         self._logger.debug("Creating tables if not exists")
-        conn = self._conn
+        conn = await self._get_conn()
         await conn.executescript("""
             CREATE TABLE IF NOT EXISTS story (
                 id TEXT PRIMARY KEY,
@@ -106,7 +106,7 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
             )
         else:
             cursor = await conn.execute("SELECT * FROM story")
-        rows = await cursor.fetchall()
+        rows = list(await cursor.fetchall())
         self._logger.debug("Found %d stories", len(rows))
         return [self._row_to_story(row) for row in rows]
 
@@ -203,6 +203,6 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
 
         conn = await self._get_conn()
         cursor = await conn.execute(query, params)
-        rows = await cursor.fetchall()
+        rows = list(await cursor.fetchall())
         self._logger.debug("Found %d tasks", len(rows))
         return [self._row_to_task(row) for row in rows]

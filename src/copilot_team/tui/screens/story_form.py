@@ -6,6 +6,7 @@ from textual.widgets import Button, Static
 
 from copilot_team.core.models import Story
 from copilot_team.core.services import TaskService
+from copilot_team.tui.messages import NavigateToTree
 from copilot_team.tui.pydantic_form import PydanticForm
 
 
@@ -21,13 +22,10 @@ class StoryFormPanel(Vertical):
     }
     """
 
-    def __init__(self, story: Story | None = None) -> None:
+    def __init__(self, task_service: TaskService, story: Story | None = None) -> None:
         super().__init__()
+        self._task_service = task_service
         self._story = story
-
-    @property
-    def task_service(self) -> TaskService:
-        return self.app.task_service  #
 
     def compose(self) -> ComposeResult:
         yield PydanticForm(
@@ -43,7 +41,7 @@ class StoryFormPanel(Vertical):
         if event.button.id == "btn-save":
             await self._save_story()
         elif event.button.id == "btn-cancel":
-            self.app.action_show_tree()  #
+            self.post_message(NavigateToTree())
 
     async def _save_story(self) -> None:
         form = self.query_one(PydanticForm)
@@ -55,10 +53,9 @@ class StoryFormPanel(Vertical):
         data = form.get_form_data()
 
         if self._story:
-            story = self._story.model_copy(update=data)
+            await self._task_service.update_story(self._story.id, data)
         else:
-            story = Story(**data)
+            await self._task_service.create_story(data)
 
-        await self.task_service.save_story(story)
         self.app.notify(f"Story '{data['name']}' saved!", severity="information")
-        self.app.action_show_tree()  #
+        self.post_message(NavigateToTree())

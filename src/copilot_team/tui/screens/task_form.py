@@ -6,6 +6,7 @@ from textual.widgets import Button, Label, Select, Static
 
 from copilot_team.core.models import Task
 from copilot_team.core.services import TaskService
+from copilot_team.tui.messages import NavigateToTree
 from copilot_team.tui.pydantic_form import PydanticForm
 
 
@@ -21,14 +22,16 @@ class TaskFormPanel(Vertical):
     }
     """
 
-    def __init__(self, task: Task | None = None, story_id: str | None = None) -> None:
+    def __init__(
+        self,
+        task_service: TaskService,
+        task: Task | None = None,
+        story_id: str | None = None,
+    ) -> None:
         super().__init__()
+        self._task_service = task_service
         self._edit_task = task
         self._story_id = story_id
-
-    @property
-    def task_service(self) -> TaskService:
-        return self.app.task_service  #
 
     @property
     def _current_story_id(self) -> str | None:
@@ -43,19 +46,22 @@ class TaskFormPanel(Vertical):
 
         # Story select — populated async in on_mount
         yield Label("Story:")
-        yield Select(
+        story_id = self._current_story_id
+        story_select: Select[str] = Select[str](
             [],
-            value=self._current_story_id or Select.BLANK,
             allow_blank=True,
             id="task-story",
         )
+        if story_id is not None:
+            story_select.value = story_id
+        yield story_select
 
         with Static(classes="form-buttons"):
             yield Button("Save", id="btn-save", variant="primary")
             yield Button("Cancel", id="btn-cancel", variant="error")
 
     async def on_mount(self) -> None:
-        stories = await self.task_service.list_stories()
+        stories = await self._task_service.list_stories()
         story_options = [(s.name, s.id) for s in stories]
         select = self.query_one("#task-story", Select)
         select.set_options(story_options)
@@ -67,7 +73,7 @@ class TaskFormPanel(Vertical):
         if btn_id == "btn-save":
             await self._save_task()
         elif btn_id == "btn-cancel":
-            self.app.action_show_tree()  #
+            self.post_message(NavigateToTree())
 
     async def _save_task(self) -> None:
         form = self.query_one(PydanticForm)
@@ -83,10 +89,9 @@ class TaskFormPanel(Vertical):
         data["story_id"] = story_id_val if story_id_val != Select.BLANK else None
 
         if self._edit_task:
-            task = self._edit_task.model_copy(update=data)
+            await self._task_service.update_task(self._edit_task.id, data)
         else:
-            task = Task(**data)
+            await self._task_service.create_task(data)
 
-        await self.task_service.save_task(task)
         self.app.notify(f"Task '{data['name']}' saved!", severity="information")
-        self.app.action_show_tree()  #
+        self.post_message(NavigateToTree())

@@ -5,9 +5,13 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.widget import Widget
 from textual.widgets import Footer, Static
 
-from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.services import TaskService
 from copilot_team.core.settings import Settings
+from copilot_team.tui.messages import (
+    NavigateToStoryForm,
+    NavigateToTaskForm,
+    NavigateToTree,
+)
 from copilot_team.tui.screens.chat import ChatPanel
 from copilot_team.tui.screens.settings import SettingsPanel
 from copilot_team.tui.screens.story_form import StoryFormPanel
@@ -48,13 +52,12 @@ class CopilotTeamApp(App):
 
     def __init__(
         self,
-        task_store: BaseTaskStoreBackend,
+        task_service: TaskService,
         copilot_client: CopilotClient | None = None,
         settings: Settings | None = None,
     ) -> None:
         super().__init__()
-        self.task_store = task_store
-        self.task_service = TaskService(task_store)
+        self.task_service = task_service
         self.copilot_client = copilot_client or CopilotClient(
             {"auto_restart": True, "auto_start": True}
         )
@@ -68,7 +71,7 @@ class CopilotTeamApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        self._show_panel(TreeViewPanel())
+        self._show_panel(TreeViewPanel(task_service=self.task_service))
 
     def _show_panel(self, panel: Widget) -> None:
         """Replace the content area with the given panel."""
@@ -89,15 +92,21 @@ class CopilotTeamApp(App):
 
     def action_show_tree(self) -> None:
         self._update_active_menu("menu-tree")
-        self._show_panel(TreeViewPanel())
+        self._show_panel(TreeViewPanel(task_service=self.task_service))
 
     def action_show_chat(self) -> None:
         self._update_active_menu("menu-chat")
-        self._show_panel(ChatPanel())
+        self._show_panel(
+            ChatPanel(
+                task_service=self.task_service,
+                copilot_client=self.copilot_client,
+                settings=self.settings,
+            )
+        )
 
     def action_show_settings(self) -> None:
         self._update_active_menu("menu-settings")
-        self._show_panel(SettingsPanel())
+        self._show_panel(SettingsPanel(settings=self.settings))
 
     def action_new_task(self) -> None:
         self.show_task_form()
@@ -105,12 +114,25 @@ class CopilotTeamApp(App):
     def show_story_form(self, story=None) -> None:
         """Navigate to story form for create/edit."""
         self._update_active_menu("menu-tree")
-        self._show_panel(StoryFormPanel(story=story))
+        self._show_panel(StoryFormPanel(task_service=self.task_service, story=story))
 
     def show_task_form(self, task=None, story_id=None) -> None:
         """Navigate to task form for create/edit."""
         self._update_active_menu("menu-tree")
-        self._show_panel(TaskFormPanel(task=task, story_id=story_id))
+        self._show_panel(
+            TaskFormPanel(task_service=self.task_service, task=task, story_id=story_id)
+        )
+
+    # ── Navigation message handlers ──────────────────────
+
+    def on_navigate_to_tree(self, _event: NavigateToTree) -> None:
+        self.action_show_tree()
+
+    def on_navigate_to_story_form(self, event: NavigateToStoryForm) -> None:
+        self.show_story_form(story=event.story)
+
+    def on_navigate_to_task_form(self, event: NavigateToTaskForm) -> None:
+        self.show_task_form(task=event.task, story_id=event.story_id)
 
     def on_click(self, event) -> None:
         """Handle sidebar menu item clicks and dispatch to navigation actions."""

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.message import Message
 from textual.widgets import Button, Static
 
 from copilot_team.core.models import Story, Task
 from copilot_team.core.services import TaskService
+from copilot_team.tui.messages import NavigateToStoryForm, NavigateToTaskForm
 
 
 def _status_icon(status: str) -> str:
@@ -48,6 +50,13 @@ TOTAL_WIDTH = COL_NAME + STORY_PREFIX_LEN + 2 + COL_AGENT + COL_REPO + COL_CHECK
 class StoryHeader(Static):
     """Clickable collapsible story header row."""
 
+    class Clicked(Message):
+        """Emitted when the story header is clicked."""
+
+        def __init__(self, header: StoryHeader) -> None:
+            self.header = header
+            super().__init__()
+
     def __init__(self, story: Story, expanded: bool = True) -> None:
         self._story = story
         self._expanded = expanded
@@ -82,9 +91,19 @@ class StoryHeader(Static):
     def expanded(self) -> bool:
         return self._expanded
 
+    def on_click(self) -> None:
+        self.post_message(self.Clicked(self))
+
 
 class TaskRow(Static):
     """A single task row in the tree."""
+
+    class Clicked(Message):
+        """Emitted when a task row is clicked."""
+
+        def __init__(self, row: TaskRow) -> None:
+            self.row = row
+            super().__init__()
 
     def __init__(self, task: Task, is_last: bool = False) -> None:
         self._data = task
@@ -137,6 +156,9 @@ class TaskRow(Static):
     def expanded(self) -> bool:
         return self._expanded
 
+    def on_click(self) -> None:
+        self.post_message(self.Clicked(self))
+
 
 class ChecklistRow(Static):
     """A single checklist item row (third level) in the tree."""
@@ -181,9 +203,9 @@ class TreeViewPanel(Vertical):
     }
     """
 
-    @property
-    def task_service(self) -> TaskService:
-        return self.app.task_service  #
+    def __init__(self, task_service: TaskService) -> None:
+        super().__init__()
+        self._task_service = task_service
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree-toolbar"):
@@ -210,20 +232,20 @@ class TreeViewPanel(Vertical):
         container = self.query_one("#stories-tree", VerticalScroll)
         container.remove_children()
 
-        stories = await self.task_service.list_stories()
+        stories = await self._task_service.list_stories()
         stories.sort()
 
         for story in stories:
             header = StoryHeader(story, expanded=True)
             container.mount(header)
-            tasks = await self.task_service.list_tasks(story_id=story.id)
+            tasks = await self._task_service.list_tasks(story_id=story.id)
             tasks.sort()
             for i, task in enumerate(tasks):
                 is_last = i == len(tasks) - 1
                 container.mount(TaskRow(task, is_last=is_last))
 
         # Unassigned tasks section
-        unassigned = await self.task_service.list_unassigned_tasks()
+        unassigned = await self._task_service.list_unassigned_tasks()
         if unassigned:
             unassigned.sort()
             container.mount(
@@ -239,38 +261,40 @@ class TreeViewPanel(Vertical):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-new-story":
-            self.app.show_story_form()  #
+            self.post_message(NavigateToStoryForm())
         elif event.button.id == "btn-new-task":
-            self.app.show_task_form()  #
+            self.post_message(NavigateToTaskForm())
 
-    def on_static_click(self, event: Static.Click) -> None:
-        """Handle clicks on story headers, task rows, and checklist expansion."""
-        widget = event.static
-        if isinstance(widget, StoryHeader):
-            expanded = widget.toggle()
-            story_id = widget.story.id
-            task_ids = set()
+    def on_story_header_clicked(self, event: StoryHeader.Clicked) -> None:
+        """Handle story header clicks for collapsing/expanding."""
+        widget = event.header
+        expanded = widget.toggle()
+        story_id = widget.story.id
+        task_ids = set()
+        for row in self.query(".task-row"):
+            if isinstance(row, TaskRow) and row.task_data.story_id == story_id:
+                row.display = expanded
+                task_ids.add(row.task_data.id)
+        for chk in self.query(".checklist-tree-row"):
+            if any(
+                chk.id and chk.id.startswith(f"chk-tree-{tid}-") for tid in task_ids
+            ):
+                chk.display = False
+        # Reset expanded state on tasks when collapsing
+        if not expanded:
             for row in self.query(".task-row"):
                 if isinstance(row, TaskRow) and row.task_data.story_id == story_id:
-                    row.display = expanded
-                    task_ids.add(row.task_data.id)
-            for chk in self.query(".checklist-tree-row"):
-                if any(
-                    chk.id and chk.id.startswith(f"chk-tree-{tid}-") for tid in task_ids
-                ):
-                    chk.display = False
-            # Reset expanded state on tasks when collapsing
-            if not expanded:
-                for row in self.query(".task-row"):
-                    if isinstance(row, TaskRow) and row.task_data.story_id == story_id:
-                        row.collapse_checklist()
-        elif isinstance(widget, TaskRow):
-            task = widget.task_data
-            if task.checklist:
-                expanded = widget.toggle_checklist()
-                self._toggle_checklist_rows(widget, expanded)
-            else:
-                self.app.show_task_form(task=task)  #
+                    row.collapse_checklist()
+
+    def on_task_row_clicked(self, event: TaskRow.Clicked) -> None:
+        """Handle task row clicks for checklist expansion or navigation."""
+        widget = event.row
+        task = widget.task_data
+        if task.checklist:
+            expanded = widget.toggle_checklist()
+            self._toggle_checklist_rows(widget, expanded)
+        else:
+            self.post_message(NavigateToTaskForm(task=task))
 
     def _toggle_checklist_rows(self, task_row: TaskRow, show: bool) -> None:
         container = self.query_one("#stories-tree", VerticalScroll)
