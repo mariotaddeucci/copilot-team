@@ -1,28 +1,28 @@
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
-from textual.screen import Screen
-from textual.widgets import Button, Input, RichLog, Static
+from textual.containers import Horizontal, Vertical
+from textual.widgets import Button, Input, RichLog
 
 
-class ChatScreen(Screen):
-    """Chat interface screen for future AI agent interaction."""
+class ChatPanel(Vertical):
+    """Chat interface panel for future AI agent interaction."""
 
-    BINDINGS = [
-        ("escape", "go_back", "Back"),
-    ]
+    DEFAULT_CSS = """
+    ChatPanel {
+        height: 1fr;
+        width: 1fr;
+    }
+    """
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="chat-container"):
-            yield Static("[bold]💬 Chat[/bold] (future AI agent interaction)")
-            yield RichLog(id="chat-log", markup=True)
-            with Static(id="chat-input-bar"):
-                yield Input(
-                    placeholder="Type a message...",
-                    id="chat-input",
-                )
-                yield Button("Send", id="chat-send", variant="primary")
+        yield RichLog(id="chat-log", markup=True)
+        with Horizontal(id="chat-input-bar"):
+            yield Input(
+                placeholder="Type a message...",
+                id="chat-input",
+            )
+            yield Button("Send", id="chat-send", variant="primary")
 
     def on_mount(self) -> None:
         log = self.query_one("#chat-log", RichLog)
@@ -48,6 +48,3 @@ class ChatScreen(Screen):
             "[dim italic]AI agent integration coming soon...[/dim italic]"
         )
         input_widget.value = ""
-
-    def action_go_back(self) -> None:
-        self.app.pop_screen()

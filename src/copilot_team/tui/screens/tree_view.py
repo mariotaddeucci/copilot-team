@@ -1,34 +1,32 @@
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Button, Static, Tree
+from textual.containers import Vertical
+from textual.widgets import Tree
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, Task
 
 
-class TreeViewScreen(Screen):
-    """Screen showing a tree view of stories and their tasks."""
+class TreeViewPanel(Vertical):
+    """Panel showing a tree view of stories and their tasks."""
 
-    BINDINGS = [
-        ("r", "refresh", "Refresh"),
-    ]
-
-    def compose(self) -> ComposeResult:
-        yield Static("Stories & Tasks", id="tree-title")
-        tree: Tree[Story | Task] = Tree("📋 Stories", id="stories-tree")
-        tree.root.expand()
-        yield tree
-        with Static(id="tree-buttons"):
-            yield Button("New Story [s]", id="btn-new-story", variant="primary")
-            yield Button("New Task [a]", id="btn-new-task", variant="success")
-            yield Button("Chat [c]", id="btn-chat", variant="default")
-            yield Button("Refresh [r]", id="btn-refresh", variant="default")
+    DEFAULT_CSS = """
+    TreeViewPanel {
+        height: 1fr;
+        width: 1fr;
+    }
+    """
 
     @property
     def task_store(self) -> BaseTaskStoreBackend:
         return self.app.task_store  # type: ignore[attr-defined]
+
+    def compose(self) -> ComposeResult:
+        tree: Tree[Story | Task] = Tree("Stories", id="stories-tree")
+        tree.root.expand()
+        tree.show_root = False
+        yield tree
 
     def on_mount(self) -> None:
         self._refresh_tree()
@@ -43,6 +41,16 @@ class TreeViewScreen(Screen):
         }
         return icons.get(status, "❓")
 
+    def _status_color(self, status: str) -> str:
+        colors = {
+            "created": "#6272a4",
+            "planning": "#f1fa8c",
+            "ready": "#ffb86c",
+            "in_progress": "#8be9fd",
+            "completed": "#50fa7b",
+        }
+        return colors.get(status, "#f8f8f2")
+
     def _refresh_tree(self) -> None:
         tree = self.query_one("#stories-tree", Tree)
         tree.clear()
@@ -52,23 +60,23 @@ class TreeViewScreen(Screen):
 
         for story in stories:
             icon = self._status_icon(story.status)
-            label = f"{icon} {story.name} - {story.description} [{story.status}]"
+            color = self._status_color(story.status)
+            label = f"{icon} [{color}]{story.name}[/] [dim]— {story.description}[/] [{color}]{story.status}[/]"
             story_node = tree.root.add(label, data=story)
 
             tasks = self.task_store.list_tasks(story_id=story.id)
             tasks.sort()
             for task in tasks:
                 task_icon = self._status_icon(task.status)
+                task_color = self._status_color(task.status)
                 checklist_total = len(task.checklist)
                 checklist_done = sum(1 for item in task.checklist if item.completed)
                 checklist_info = (
-                    f"[{checklist_done}/{checklist_total}]"
+                    f"[#bd93f9][{checklist_done}/{checklist_total}][/]"
                     if checklist_total > 0
                     else ""
                 )
-                task_label = (
-                    f"{task_icon} {task.name} {checklist_info} [{task.status}]"
-                )
+                task_label = f"{task_icon} [{task_color}]{task.name}[/] {checklist_info} [{task_color}]{task.status}[/]"
                 story_node.add_leaf(task_label, data=task)
 
             story_node.expand()
@@ -78,23 +86,6 @@ class TreeViewScreen(Screen):
     def on_tree_node_selected(self, event: Tree.NodeSelected[Story | Task]) -> None:
         node_data = event.node.data
         if isinstance(node_data, Story):
-            from copilot_team.tui.screens.story_form import StoryFormScreen
-
-            self.app.push_screen(StoryFormScreen(story=node_data))
+            self.app.show_story_form(story=node_data)  # type: ignore[attr-defined]
         elif isinstance(node_data, Task):
-            from copilot_team.tui.screens.task_form import TaskFormScreen
-
-            self.app.push_screen(TaskFormScreen(task=node_data))
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btn-new-story":
-            self.app.action_new_story()  # type: ignore[attr-defined]
-        elif event.button.id == "btn-new-task":
-            self.app.action_new_task()  # type: ignore[attr-defined]
-        elif event.button.id == "btn-chat":
-            self.app.action_show_chat()  # type: ignore[attr-defined]
-        elif event.button.id == "btn-refresh":
-            self._refresh_tree()
-
-    def action_refresh(self) -> None:
-        self._refresh_tree()
+            self.app.show_task_form(task=node_data)  # type: ignore[attr-defined]
