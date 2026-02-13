@@ -30,6 +30,17 @@ def _status_color(status: str) -> str:
     return colors.get(status, "#f8f8f2")
 
 
+# Column widths for tabular alignment
+COL_NAME = 30
+COL_AGENT = 14
+COL_REPO = 18
+COL_CHECK = 8
+# Story header uses extra indent (7 chars: "  X Y  ") before name
+STORY_INDENT = 7
+# Task row uses extra indent (8 chars: "       X  ") before name
+TASK_INDENT = 10
+
+
 class StoryHeader(Static):
     """Clickable collapsible story header row."""
 
@@ -44,12 +55,13 @@ class StoryHeader(Static):
         color = _status_color(self._story.status)
         arrow = "▾" if self._expanded else "▸"
         name = self._story.name
+        desc = self._story.description or ""
+        # Indent matches STORY_INDENT (7 chars for "  X Y  ")
+        name_col = f"{name}  — {desc}" if desc else name
         status = self._story.status
         return (
             f"  [{color}]{arrow} {icon}[/]  "
-            f"[bold]{name}[/]"
-            f"  [dim]—[/] [dim italic]{self._story.description or ''}[/]"
-            f"                                                             "
+            f"[bold]{name_col:<{COL_NAME + COL_AGENT + COL_REPO + COL_CHECK - STORY_INDENT}s}[/]"
             f"[{color}]{status}[/]"
         )
 
@@ -85,12 +97,14 @@ class TaskRow(Static):
         done = sum(1 for c in self._data.checklist if c.completed)
         check = f"{done}/{total}" if total else "-"
         status = self._data.status
+        # TASK_INDENT accounts for "       X  " (10 chars)
+        name_w = COL_NAME - (TASK_INDENT - STORY_INDENT)
         return (
             f"       [{color}]{icon}[/]  "
-            f"[{color}]{name:<28s}[/]"
-            f"[dim]{agent:<14s}[/]"
-            f"[dim]{repo:<18s}[/]"
-            f"[#bd93f9]{check:<8s}[/]"
+            f"[{color}]{name:<{name_w}s}[/]"
+            f"[dim]{agent:<{COL_AGENT}s}[/]"
+            f"[dim]{repo:<{COL_REPO}s}[/]"
+            f"[#bd93f9]{check:<{COL_CHECK}s}[/]"
             f"[{color}]{status}[/]"
         )
 
@@ -122,11 +136,13 @@ class TreeViewPanel(Vertical):
         yield VerticalScroll(id="stories-tree")
 
     def _header_row(self) -> str:
+        # Offset = STORY_INDENT (7) + 2 for leading spaces
+        offset = STORY_INDENT + 2
         return (
-            f"  [bold #bd93f9]{'Name':<36s}"
-            f"{'Agent':<14s}"
-            f"{'Repository':<18s}"
-            f"{'Check':<8s}"
+            f"  [bold #bd93f9]{'Name':<{COL_NAME + offset - 2}s}"
+            f"{'Agent':<{COL_AGENT}s}"
+            f"{'Repository':<{COL_REPO}s}"
+            f"{'Check':<{COL_CHECK}s}"
             f"{'Status'}[/]"
         )
 
