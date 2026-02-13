@@ -1,0 +1,338 @@
+/* ── Dracula Theme Colors ─────────────────────────────── */
+/* Background: #282a36, Current Line: #44475a, Foreground: #f8f8f2 */
+/* Comment: #6272a4, Cyan: #8be9fd, Green: #50fa7b */
+/* Orange: #ffb86c, Pink: #ff79c6, Purple: #bd93f9 */
+/* Red: #ff5555, Yellow: #f1fa8c */
+
+$dracula-bg: #282a36;
+$dracula-bg-dark: #21222c;
+$dracula-current: #44475a;
+$dracula-fg: #f8f8f2;
+$dracula-comment: #6272a4;
+$dracula-cyan: #8be9fd;
+$dracula-green: #50fa7b;
+$dracula-orange: #ffb86c;
+$dracula-pink: #ff79c6;
+$dracula-purple: #bd93f9;
+$dracula-red: #ff5555;
+$dracula-yellow: #f1fa8c;
+
+/* ── Global ──────────────────────────────────────────── */
+
+Screen {
+    background: $dracula-bg-dark;
+    color: $dracula-fg;
+}
+
+/* ── App Layout ──────────────────────────────────────── */
+
+#app-layout {
+    width: 100%;
+    height: 1fr;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+
+#sidebar {
+    width: 22;
+    height: 100%;
+    background: #1e1f29;
+    border-right: solid #2d303d;
+    padding: 1 0 0 0;
+}
+
+#sidebar-menu {
+    height: auto;
+    padding: 0;
+}
+
+.menu-item {
+    padding: 0 1;
+    height: 2;
+    color: $dracula-comment;
+}
+
+.menu-item:hover {
+    background: $dracula-current;
+    color: $dracula-fg;
+}
+
+.menu-item.active {
+    background: $dracula-current;
+    color: $dracula-purple;
+    text-style: bold;
+}
+
+#sidebar-activity {
+    dock: bottom;
+    height: auto;
+    max-height: 10;
+    padding: 1 0;
+    border-top: solid #2d303d;
+}
+
+#activity-title {
+    color: $dracula-comment;
+    height: 1;
+    padding: 0 1;
+}
+
+#activity-content {
+    padding: 0 1;
+    height: auto;
+    color: $dracula-comment;
+}
+
+/* ── Content Area ────────────────────────────────────── */
+
+#content-area {
+    width: 1fr;
+    height: 1fr;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ── Tree View ───────────────────────────────────────── */
+
+#tree-toolbar {
+    height: 3;
+    padding: 0 2;
+    align: right middle;
+    background: $dracula-bg-dark;
+}
+
+#tree-spacer {
+    width: 1fr;
+    height: 1;
+}
+
+#tree-toolbar Button {
+    min-width: 10;
+    height: 1;
+    margin: 0 0 0 1;
+    background: $dracula-pink;
+    color: $dracula-fg;
+    border: none;
+    text-style: bold;
+    content-align: center middle;
+}
+
+#tree-toolbar Button:hover {
+    background: $dracula-purple;
+    color: $dracula-fg;
+}
+
+#table-header {
+    height: 1;
+    padding: 0 0;
+    background: $dracula-current;
+    color: $dracula-purple;
+    text-style: bold;
+}
+
+#stories-tree {
+    height: 1fr;
+    width: 100%;
+    background: $dracula-bg-dark;
+    padding: 0;
+    scrollbar-color: $dracula-current;
+    scrollbar-color-hover: $dracula-comment;
+    scrollbar-color-active: $dracula-purple;
+}
+
+.story-header {
+    height: 1;
+    padding: 0 0;
+    color: $dracula-fg;
+    background: #282a36;
+}
+
+.story-header:hover {
+    background: $dracula-current;
+}
+
+.task-row {
+    height: 1;
+    padding: 0 0;
+    color: $dracula-fg;
+    background: transparent;
+}
+
+.task-row:hover {
+    background: #2d303d;
+}
+
+/* ── Forms ────────────────────────────────────────────── */
+
+Label {
+    margin-top: 1;
+    color: $dracula-comment;
+}
+
+Input {
+    width: 100%;
+    border: round $dracula-current;
+    background: $dracula-bg;
+    color: $dracula-fg;
+}
+
+Input:focus {
+    border: round $dracula-purple;
+}
+
+TextArea {
+    width: 100%;
+    height: 5;
+    border: round $dracula-current;
+    background: $dracula-bg;
+}
+
+TextArea:focus {
+    border: round $dracula-purple;
+}
+
+Select {
+    width: 100%;
+}
+
+SelectCurrent {
+    border: round $dracula-current;
+    background: $dracula-bg;
+}
+
+SelectCurrent:focus {
+    border: round $dracula-purple;
+}
+
+.form-buttons {
+    margin-top: 1;
+    layout: horizontal;
+    height: auto;
+}
+
+.form-buttons Button {
+    margin: 0 1;
+}
+
+/* ── Checklist Editor ────────────────────────────────── */
+
+#checklist-container {
+    height: auto;
+    max-height: 10;
+    padding: 0;
+}
+
+.checklist-row {
+    height: 3;
+    padding: 0;
+    layout: horizontal;
+}
+
+.checklist-row Checkbox {
+    width: 1fr;
+}
+
+.checklist-delete {
+    width: 5;
+    min-width: 5;
+    height: 3;
+    background: $dracula-red 20%;
+    color: $dracula-red;
+    border: none;
+}
+
+#checklist-add-bar {
+    height: auto;
+    padding: 0;
+    layout: horizontal;
+}
+
+#checklist-new-input {
+    width: 1fr;
+}
+
+#checklist-add-bar Button {
+    width: auto;
+    margin-left: 1;
+}
+
+Button {
+    border: none;
+    content-align: center middle;
+}
+
+Button.-primary {
+    background: $dracula-pink;
+    color: $dracula-fg;
+    text-style: bold;
+    content-align: center middle;
+}
+
+Button.-primary:hover {
+    background: $dracula-purple;
+}
+
+Button.-error {
+    background: $dracula-current;
+    color: $dracula-comment;
+}
+
+Button.-error:hover {
+    background: $dracula-red 40%;
+    color: $dracula-red;
+}
+
+Button.-success {
+    background: $dracula-pink;
+    color: $dracula-fg;
+    text-style: bold;
+    content-align: center middle;
+}
+
+Button.-success:hover {
+    background: $dracula-purple;
+}
+
+/* ── Chat ─────────────────────────────────────────────── */
+
+#chat-log {
+    width: 100%;
+    height: 1fr;
+    padding: 1 2;
+    border: round $dracula-current;
+    background: $dracula-bg;
+    scrollbar-color: $dracula-current;
+    scrollbar-color-hover: $dracula-comment;
+    scrollbar-color-active: $dracula-purple;
+}
+
+#chat-input-bar {
+    dock: bottom;
+    height: auto;
+    padding: 1 0;
+}
+
+#chat-input {
+    width: 1fr;
+}
+
+#chat-send {
+    width: auto;
+    margin-left: 1;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+
+Footer {
+    background: $dracula-bg;
+    color: $dracula-comment;
+}
+
+Footer > .footer--key {
+    background: $dracula-current;
+    color: $dracula-purple;
+}
+
+Footer > .footer--description {
+    color: $dracula-fg;
+}

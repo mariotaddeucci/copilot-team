@@ -1,2 +1,4 @@
 def main() -> None:
-    print("Hello from copilot-team!")
+    from copilot_team.main import main as _main
+
+    _main()
