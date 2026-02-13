@@ -26,7 +26,7 @@ class ChatPanel(Vertical):
 
     def on_mount(self) -> None:
         log = self.query_one("#chat-log", RichLog)
-        log.write("[dim]Chat interface ready. AI agent integration coming soon.[/dim]")
+        log.write("[dim]Chat ready. AI agent integration coming soon.[/dim]")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "chat-send":

@@ -8,22 +8,22 @@ from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, Task
 
 # Column widths for the tabular layout
-COL_NAME = 36
-COL_AGENT = 18
-COL_REPO = 22
+COL_NAME = 32
+COL_AGENT = 16
+COL_REPO = 20
 COL_CHECK = 10
 COL_STATUS = 14
 
 
 def _status_icon(status: str) -> str:
     icons = {
-        "created": "⬜",
-        "planning": "📝",
-        "ready": "🟡",
-        "in_progress": "🔵",
-        "completed": "✅",
+        "created": "○",
+        "planning": "◎",
+        "ready": "●",
+        "in_progress": "▸",
+        "completed": "✓",
     }
-    return icons.get(status, "❓")
+    return icons.get(status, "?")
 
 
 def _status_color(status: str) -> str:
@@ -56,12 +56,12 @@ class StoryHeader(Static):
     def _render_label(self) -> str:
         icon = _status_icon(self._story.status)
         color = _status_color(self._story.status)
-        arrow = "▼" if self._expanded else "▶"
+        arrow = "▾" if self._expanded else "▸"
         name_text = _pad(self._story.name, COL_NAME)
         desc = self._story.description or ""
         if len(desc) > 40:
             desc = desc[:39] + "…"
-        return f"[bold]{arrow}[/] {icon} [{color}]{name_text}[/] [dim]{desc}[/]"
+        return f" [{color}]{arrow}[/] [{color}]{icon}[/] [{color} bold]{name_text}[/] [dim]{desc}[/]"
 
     def toggle(self) -> bool:
         self._expanded = not self._expanded
@@ -89,13 +89,13 @@ class TaskRow(Static):
         icon = _status_icon(self._data.status)
         color = _status_color(self._data.status)
         name = _pad(self._data.name, COL_NAME)
-        agent = _pad(self._data.agent or "—", COL_AGENT)
-        repo = _pad(self._data.repository_name or "—", COL_REPO)
+        agent = _pad(self._data.agent or "-", COL_AGENT)
+        repo = _pad(self._data.repository_name or "-", COL_REPO)
         total = len(self._data.checklist)
         done = sum(1 for c in self._data.checklist if c.completed)
-        check = _pad(f"{done}/{total}" if total else "—", COL_CHECK)
+        check = _pad(f"{done}/{total}" if total else "-", COL_CHECK)
         status = _pad(self._data.status, COL_STATUS)
-        return f"    {icon} [{color}]{name}[/] [dim]{agent}[/] [dim]{repo}[/] [#bd93f9]{check}[/] [{color}]{status}[/]"
+        return f"      [{color}]{icon}[/] [{color}]{name}[/] [dim]{agent}[/] [dim]{repo}[/] [#bd93f9]{check}[/] [{color}]{status}[/]"
 
     @property
     def task_data(self) -> Task:
@@ -118,18 +118,19 @@ class TreeViewPanel(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree-toolbar"):
-            yield Button("+ Story", id="btn-new-story", variant="primary")
-            yield Button("+ Task", id="btn-new-task", variant="success")
+            yield Static("[bold] Stories & Tasks[/bold]", id="tree-title")
+            yield Button("+Story", id="btn-new-story", variant="default")
+            yield Button("+Task", id="btn-new-task", variant="default")
         yield Static(self._header_row(), id="table-header")
         yield VerticalScroll(id="stories-tree")
 
     def _header_row(self) -> str:
-        name = _pad("Name", COL_NAME + 6)
+        name = _pad("Name", COL_NAME + 7)
         agent = _pad("Agent", COL_AGENT)
         repo = _pad("Repository", COL_REPO)
-        check = _pad("Checklist", COL_CHECK)
+        check = _pad("Check", COL_CHECK)
         status = _pad("Status", COL_STATUS)
-        return f"[bold #bd93f9]{name}{agent}{repo}{check}{status}[/]"
+        return f" [bold #6272a4]{name}{agent}{repo}{check}{status}[/]"
 
     def on_mount(self) -> None:
         self._refresh_tree()
@@ -157,7 +158,7 @@ class TreeViewPanel(Vertical):
             unassigned.sort()
             container.mount(
                 Static(
-                    "[bold #ffb86c]▼ ⚠ Unassigned Tasks[/]",
+                    " [#ffb86c]▾[/] [#ffb86c bold]Unassigned[/]",
                     id="unassigned-header",
                     classes="story-header",
                 )

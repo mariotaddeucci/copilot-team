@@ -15,16 +15,17 @@ class Sidebar(Vertical):
     """Left sidebar with menu and activity section."""
 
     def compose(self) -> ComposeResult:
-        yield Static("🤖 [bold]Copilot Team[/bold]", id="sidebar-title")
         with Vertical(id="sidebar-menu"):
             yield Static(
-                "📋  Stories & Tasks", id="menu-tree", classes="menu-item active"
+                "  [bold]Tasks[/bold]", id="menu-tree", classes="menu-item active"
             )
-            yield Static("💬  Chat", id="menu-chat", classes="menu-item")
-        with Vertical(id="sidebar-activity"):
-            yield Static("[bold]⚡ Activity[/bold]", id="activity-title")
             yield Static(
-                "[dim]No background tasks running[/dim]", id="activity-content"
+                "  [bold]Chat[/bold]", id="menu-chat", classes="menu-item"
+            )
+        with Vertical(id="sidebar-activity"):
+            yield Static("[bold] Activity[/bold]", id="activity-title")
+            yield Static(
+                "[dim]No background tasks[/dim]", id="activity-content"
             )
 
 
@@ -35,33 +36,31 @@ class CopilotTeamApp(App):
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [
-        Binding("t", "show_tree", "Tree View", show=True),
+        Binding("t", "show_tree", "Tasks", show=True),
         Binding("c", "show_chat", "Chat", show=True),
-        Binding("q", "quit", "Quit", show=True),
+        Binding("n", "new_task", "New Task", show=True),
+        Binding("ctrl+q", "quit", "Quit", show=True),
     ]
 
     def __init__(self, task_store: BaseTaskStoreBackend) -> None:
         super().__init__()
         self.task_store = task_store
+        self._ctrl_c_count = 0
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="app-layout"):
             yield Sidebar(id="sidebar")
-            with Vertical(id="main-area"):
-                yield Static("📋 Stories & Tasks", id="page-title")
-                yield Container(id="content-area")
+            yield Container(id="content-area")
         yield Footer()
 
     def on_mount(self) -> None:
         self._show_panel(TreeViewPanel())
 
-    def _show_panel(self, panel: Widget, title: str = "") -> None:
+    def _show_panel(self, panel: Widget) -> None:
         """Replace the content area with the given panel."""
         content = self.query_one("#content-area", Container)
         content.remove_children()
         content.mount(panel)
-        if title:
-            self.query_one("#page-title", Static).update(title)
 
     def _update_active_menu(self, active_id: str) -> None:
         """Highlight the active menu item in the sidebar."""
@@ -76,26 +75,23 @@ class CopilotTeamApp(App):
 
     def action_show_tree(self) -> None:
         self._update_active_menu("menu-tree")
-        self.query_one("#page-title", Static).update("📋 Stories & Tasks")
         self._show_panel(TreeViewPanel())
 
     def action_show_chat(self) -> None:
         self._update_active_menu("menu-chat")
-        self.query_one("#page-title", Static).update("💬 Chat")
         self._show_panel(ChatPanel())
+
+    def action_new_task(self) -> None:
+        self.show_task_form()
 
     def show_story_form(self, story=None) -> None:
         """Navigate to story form for create/edit."""
-        title = "📝 Edit Story" if story else "📝 New Story"
         self._update_active_menu("menu-tree")
-        self.query_one("#page-title", Static).update(title)
         self._show_panel(StoryFormPanel(story=story))
 
     def show_task_form(self, task=None, story_id=None) -> None:
         """Navigate to task form for create/edit."""
-        title = "✏️  Edit Task" if task else "✏️  New Task"
         self._update_active_menu("menu-tree")
-        self.query_one("#page-title", Static).update(title)
         self._show_panel(TaskFormPanel(task=task, story_id=story_id))
 
     def on_click(self, event) -> None:
@@ -106,3 +102,17 @@ class CopilotTeamApp(App):
                 self.action_show_tree()
             elif widget.id == "menu-chat":
                 self.action_show_chat()
+
+    async def on_key(self, event) -> None:
+        """Handle Ctrl+C double-press to quit."""
+        if event.key == "ctrl+c":
+            self._ctrl_c_count += 1
+            if self._ctrl_c_count >= 2:
+                self.exit()
+            else:
+                self.notify("Press Ctrl+C again to quit", severity="warning")
+                self.set_timer(1.5, self._reset_ctrl_c)
+            event.prevent_default()
+
+    def _reset_ctrl_c(self) -> None:
+        self._ctrl_c_count = 0

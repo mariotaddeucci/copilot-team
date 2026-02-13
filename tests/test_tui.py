@@ -13,7 +13,6 @@ async def test_tree_view_shows_stories_and_tasks(task_store: InMemoryTaskStoreBa
     async with app.run_test(size=(160, 45)) as pilot:
         await pilot.pause()
 
-        # Should have story headers for both stories
         headers = list(app.query(StoryHeader))
         assert len(headers) == 2
         header_labels = [str(h.story.name) for h in headers]
@@ -26,7 +25,6 @@ async def test_tree_view_shows_task_rows(task_store: InMemoryTaskStoreBackend):
     async with app.run_test(size=(160, 45)) as pilot:
         await pilot.pause()
 
-        # Should have task rows with agent/repo/checklist info
         rows = list(app.query(TaskRow))
         assert len(rows) == 2
         task_names = [r.task_data.name for r in rows]
@@ -97,6 +95,14 @@ async def test_navigate_to_chat(task_store: InMemoryTaskStoreBackend):
         assert app.query_one(ChatPanel)
 
 
+async def test_navigate_new_task_shortcut(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("n")
+        await pilot.pause()
+        assert app.query_one(TaskFormPanel)
+
+
 async def test_chat_send_message(task_store: InMemoryTaskStoreBackend):
     app = CopilotTeamApp(task_store=task_store)
     async with app.run_test(size=(160, 45)) as pilot:
@@ -116,7 +122,6 @@ async def test_chat_send_message(task_store: InMemoryTaskStoreBackend):
 async def test_story_form_save(task_store: InMemoryTaskStoreBackend):
     app = CopilotTeamApp(task_store=task_store)
     async with app.run_test(size=(160, 45)) as pilot:
-        # Navigate to new story form via button
         await pilot.pause()
         btn = app.query_one("#btn-new-story")
         btn.press()
@@ -132,7 +137,6 @@ async def test_story_form_save(task_store: InMemoryTaskStoreBackend):
         save_btn.press()
         await pilot.pause()
 
-        # Should navigate back to tree view after save
         assert app.query_one(TreeViewPanel)
 
         stories = task_store.list_stories()
@@ -165,7 +169,6 @@ async def test_story_form_validation_empty_name(task_store: InMemoryTaskStoreBac
         save_btn.press()
         await pilot.pause()
 
-        # Should still be on story form (validation failed)
         assert app.query_one(StoryFormPanel)
 
 
@@ -203,11 +206,9 @@ async def test_unassigned_tasks_section(task_store: InMemoryTaskStoreBackend):
     async with app.run_test(size=(160, 45)) as pilot:
         await pilot.pause()
 
-        # Should show unassigned header
         unassigned = app.query_one("#unassigned-header")
         assert unassigned is not None
 
-        # Orphan task row should exist
         rows = list(app.query(TaskRow))
         orphan_rows = [r for r in rows if r.task_data.id == "orphan"]
         assert len(orphan_rows) == 1
@@ -221,12 +222,10 @@ async def test_sidebar_always_visible(task_store: InMemoryTaskStoreBackend):
         assert app.query_one("#sidebar-menu")
         assert app.query_one("#sidebar-activity")
 
-        # Navigate to chat - sidebar still there
         await pilot.press("c")
         await pilot.pause()
         assert app.query_one("#sidebar")
 
-        # Navigate back to tree - sidebar still there
         await pilot.press("t")
         await pilot.pause()
         assert app.query_one("#sidebar")

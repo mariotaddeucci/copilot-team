@@ -34,29 +34,21 @@ Screen {
 /* ── Sidebar ─────────────────────────────────────────── */
 
 #sidebar {
-    width: 28;
+    width: 22;
     height: 100%;
     background: $dracula-bg;
     border-right: round $dracula-current;
-    padding: 0;
-}
-
-#sidebar-title {
-    padding: 1 2;
-    color: $dracula-purple;
-    text-style: bold;
-    height: 3;
+    padding: 1 0 0 0;
 }
 
 #sidebar-menu {
     height: auto;
-    padding: 0 1;
+    padding: 0;
 }
 
 .menu-item {
-    padding: 0 2;
-    height: 3;
-    content-align-vertical: middle;
+    padding: 0 1;
+    height: 2;
     color: $dracula-comment;
 }
 
@@ -74,8 +66,8 @@ Screen {
 #sidebar-activity {
     dock: bottom;
     height: auto;
-    max-height: 12;
-    padding: 1;
+    max-height: 10;
+    padding: 1 0;
     border-top: round $dracula-current;
 }
 
@@ -86,51 +78,55 @@ Screen {
 }
 
 #activity-content {
-    padding: 1;
+    padding: 0 1;
     height: auto;
     color: $dracula-comment;
 }
 
-/* ── Main Area ───────────────────────────────────────── */
-
-#main-area {
-    width: 1fr;
-    height: 100%;
-}
-
-#page-title {
-    height: 3;
-    padding: 1 2;
-    color: $dracula-fg;
-    text-style: bold;
-    border-bottom: round $dracula-current;
-    background: $dracula-bg;
-}
+/* ── Content Area ────────────────────────────────────── */
 
 #content-area {
-    width: 100%;
-    height: 1fr;
-    padding: 1;
+    width: 1fr;
+    height: 100%;
+    padding: 0;
 }
 
 /* ── Tree View ───────────────────────────────────────── */
 
 #tree-toolbar {
-    height: auto;
-    padding: 0 1 1 1;
-    dock: top;
+    height: 3;
+    padding: 0 1;
+    align: right middle;
+    background: $dracula-bg;
+    border-bottom: round $dracula-current;
+}
+
+#tree-title {
+    width: 1fr;
+    color: $dracula-fg;
+    content-align-vertical: middle;
+    padding: 0 1;
 }
 
 #tree-toolbar Button {
-    margin: 0 1;
+    min-width: 8;
+    height: 1;
+    margin: 0 0 0 1;
+    background: $dracula-current;
+    color: $dracula-comment;
+    border: none;
+}
+
+#tree-toolbar Button:hover {
+    background: $dracula-comment;
+    color: $dracula-fg;
 }
 
 #table-header {
     height: 1;
     padding: 0 1;
-    background: $dracula-current;
-    color: $dracula-purple;
-    text-style: bold;
+    background: $dracula-bg;
+    color: $dracula-comment;
 }
 
 #stories-tree {
@@ -138,22 +134,25 @@ Screen {
     width: 100%;
     background: transparent;
     padding: 0;
+    scrollbar-color: $dracula-current;
+    scrollbar-color-hover: $dracula-comment;
+    scrollbar-color-active: $dracula-purple;
 }
 
 .story-header {
     height: 1;
-    padding: 0 1;
+    padding: 0 0;
     color: $dracula-fg;
     background: transparent;
 }
 
 .story-header:hover {
-    background: $dracula-current 50%;
+    background: $dracula-current 40%;
 }
 
 .task-row {
     height: 1;
-    padding: 0 1;
+    padding: 0 0;
     color: $dracula-fg;
     background: transparent;
 }
@@ -166,7 +165,7 @@ Screen {
 
 Label {
     margin-top: 1;
-    color: $dracula-purple;
+    color: $dracula-comment;
 }
 
 Input {
@@ -182,7 +181,7 @@ Input:focus {
 
 TextArea {
     width: 100%;
-    height: 6;
+    height: 5;
     border: round $dracula-current;
     background: $dracula-bg;
 }
@@ -205,7 +204,7 @@ SelectCurrent:focus {
 }
 
 .form-buttons {
-    margin-top: 2;
+    margin-top: 1;
     layout: horizontal;
     height: auto;
 }
@@ -218,7 +217,7 @@ SelectCurrent:focus {
 
 #checklist-container {
     height: auto;
-    max-height: 12;
+    max-height: 10;
     padding: 0;
 }
 
@@ -238,7 +237,7 @@ SelectCurrent:focus {
     height: 3;
     background: $dracula-red 20%;
     color: $dracula-red;
-    border: round $dracula-red 30%;
+    border: none;
 }
 
 #checklist-add-bar {
@@ -272,15 +271,15 @@ Button.-primary:hover {
 }
 
 Button.-error {
-    background: $dracula-red 30%;
+    background: $dracula-red 20%;
     color: $dracula-red;
-    border: round $dracula-red 50%;
+    border: round $dracula-red 30%;
 }
 
 Button.-success {
-    background: $dracula-green 30%;
+    background: $dracula-green 20%;
     color: $dracula-green;
-    border: round $dracula-green 50%;
+    border: round $dracula-green 30%;
 }
 
 /* ── Chat ─────────────────────────────────────────────── */
