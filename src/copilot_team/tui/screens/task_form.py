@@ -4,8 +4,8 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, Label, Select, Static
 
-from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Task
+from copilot_team.core.services import TaskService
 from copilot_team.tui.pydantic_form import PydanticForm
 
 
@@ -27,8 +27,8 @@ class TaskFormPanel(Vertical):
         self._story_id = story_id
 
     @property
-    def task_store(self) -> BaseTaskStoreBackend:
-        return self.app.task_store  # type: ignore[attr-defined]
+    def task_service(self) -> TaskService:
+        return self.app.task_service  # type: ignore[attr-defined]
 
     @property
     def _current_story_id(self) -> str | None:
@@ -55,7 +55,7 @@ class TaskFormPanel(Vertical):
             yield Button("Cancel", id="btn-cancel", variant="error")
 
     async def on_mount(self) -> None:
-        stories = await self.task_store.list_stories()
+        stories = await self.task_service.list_stories()
         story_options = [(s.name, s.id) for s in stories]
         select = self.query_one("#task-story", Select)
         select.set_options(story_options)
@@ -87,6 +87,6 @@ class TaskFormPanel(Vertical):
         else:
             task = Task(**data)
 
-        await self.task_store.put_task(task)
+        await self.task_service.save_task(task)
         self.app.notify(f"Task '{data['name']}' saved!", severity="information")
         self.app.action_show_tree()  # type: ignore[attr-defined]

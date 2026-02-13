@@ -1,12 +1,13 @@
 from copilot_team.tui.app import CopilotTeamApp
 from copilot_team.tui.screens.chat import ChatPanel
+from copilot_team.tui.screens.settings import SettingsPanel
 from copilot_team.tui.screens.story_form import StoryFormPanel
 from copilot_team.tui.screens.task_form import TaskFormPanel
 from copilot_team.tui.screens.tree_view import TreeViewPanel, StoryHeader, TaskRow
 from copilot_team.tui.pydantic_form import SubModelList
 from tests.conftest import InMemoryTaskStoreBackend
 
-from textual.widgets import Input, TextArea
+from textual.widgets import Button, Input, Select, TextArea
 
 
 async def test_tree_view_shows_stories_and_tasks(task_store: InMemoryTaskStoreBackend):
@@ -230,3 +231,100 @@ async def test_sidebar_always_visible(task_store: InMemoryTaskStoreBackend):
         await pilot.press("t")
         await pilot.pause()
         assert app.query_one("#sidebar")
+
+
+async def test_navigate_to_settings(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("s")
+        await pilot.pause()
+        assert app.query_one(SettingsPanel)
+
+
+async def test_settings_has_chat_and_copilot_tabs(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("s")
+        await pilot.pause()
+        assert app.query_one("#settings-tab-chat", Button)
+        assert app.query_one("#settings-tab-copilot", Button)
+
+
+async def test_settings_chat_tab_has_model_select(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("s")
+        await pilot.pause()
+        assert app.query_one("#settings-chat-model", Select)
+
+
+async def test_settings_copilot_tab_has_limits(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("s")
+        await pilot.pause()
+        copilot_btn = app.query_one("#settings-tab-copilot", Button)
+        copilot_btn.press()
+        await pilot.pause()
+        assert app.query_one("#settings-copilot-max-chat", Input)
+        assert app.query_one("#settings-copilot-max-agents", Input)
+
+
+async def test_settings_save_chat_model(task_store: InMemoryTaskStoreBackend):
+    from copilot_team.core.settings import Settings
+    settings = Settings()
+    app = CopilotTeamApp(task_store=task_store, settings=settings)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("s")
+        await pilot.pause()
+        model_select = app.query_one("#settings-chat-model", Select)
+        model_select.value = "gpt-4o"
+        save_btn = app.query_one("#settings-save", Button)
+        save_btn.press()
+        await pilot.pause()
+        assert settings.chat.default_model == "gpt-4o"
+
+
+async def test_settings_save_copilot_limits(task_store: InMemoryTaskStoreBackend):
+    from copilot_team.core.settings import Settings
+    settings = Settings()
+    app = CopilotTeamApp(task_store=task_store, settings=settings)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("s")
+        await pilot.pause()
+        copilot_btn = app.query_one("#settings-tab-copilot", Button)
+        copilot_btn.press()
+        await pilot.pause()
+        max_chat = app.query_one("#settings-copilot-max-chat", Input)
+        max_chat.value = "5"
+        max_agents = app.query_one("#settings-copilot-max-agents", Input)
+        max_agents.value = "10"
+        save_btn = app.query_one("#settings-save", Button)
+        save_btn.press()
+        await pilot.pause()
+        assert settings.copilot.max_chat_sessions == 5
+        assert settings.copilot.max_background_agents == 10
+
+
+async def test_chat_has_model_select(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("c")
+        await pilot.pause()
+        assert app.query_one("#chat-model-select", Select)
+
+
+async def test_chat_has_session_buttons(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.press("c")
+        await pilot.pause()
+        assert app.query_one("#chat-new-session", Button)
+        assert app.query_one("#chat-recreate-session", Button)
+
+
+async def test_sidebar_has_settings_menu(task_store: InMemoryTaskStoreBackend):
+    app = CopilotTeamApp(task_store=task_store)
+    async with app.run_test(size=(160, 45)) as pilot:
+        await pilot.pause()
+        assert app.query_one("#menu-settings")

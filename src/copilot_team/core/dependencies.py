@@ -6,6 +6,7 @@ from copilot import CopilotClient
 from injector import Binder, Inject, Injector, Module, singleton
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
+from copilot_team.core.services import TaskService
 from copilot_team.core.settings import Settings
 
 
@@ -62,6 +63,7 @@ class Dependencies(Module):
             to=create_factory("task_store", BaseTaskStoreBackend),
             scope=singleton,
         )
+        binder.bind(TaskService, scope=singleton)
 
 
 def create_injector(*, modules: list[Module] | None = None) -> Injector:

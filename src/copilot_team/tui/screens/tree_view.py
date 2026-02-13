@@ -4,8 +4,8 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Button, Static
 
-from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, Task
+from copilot_team.core.services import TaskService
 
 
 def _status_icon(status: str) -> str:
@@ -182,8 +182,8 @@ class TreeViewPanel(Vertical):
     """
 
     @property
-    def task_store(self) -> BaseTaskStoreBackend:
-        return self.app.task_store  # type: ignore[attr-defined]
+    def task_service(self) -> TaskService:
+        return self.app.task_service  # type: ignore[attr-defined]
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree-toolbar"):
@@ -210,21 +210,20 @@ class TreeViewPanel(Vertical):
         container = self.query_one("#stories-tree", VerticalScroll)
         container.remove_children()
 
-        stories = await self.task_store.list_stories()
+        stories = await self.task_service.list_stories()
         stories.sort()
 
         for story in stories:
             header = StoryHeader(story, expanded=True)
             container.mount(header)
-            tasks = await self.task_store.list_tasks(story_id=story.id)
+            tasks = await self.task_service.list_tasks(story_id=story.id)
             tasks.sort()
             for i, task in enumerate(tasks):
                 is_last = i == len(tasks) - 1
                 container.mount(TaskRow(task, is_last=is_last))
 
         # Unassigned tasks section
-        all_tasks = await self.task_store.list_tasks()
-        unassigned = [t for t in all_tasks if t.story_id is None]
+        unassigned = await self.task_service.list_unassigned_tasks()
         if unassigned:
             unassigned.sort()
             container.mount(

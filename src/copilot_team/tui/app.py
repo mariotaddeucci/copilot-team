@@ -1,3 +1,4 @@
+from copilot import CopilotClient
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
@@ -5,7 +6,10 @@ from textual.widget import Widget
 from textual.widgets import Footer, Static
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
+from copilot_team.core.services import TaskService
+from copilot_team.core.settings import Settings
 from copilot_team.tui.screens.chat import ChatPanel
+from copilot_team.tui.screens.settings import SettingsPanel
 from copilot_team.tui.screens.story_form import StoryFormPanel
 from copilot_team.tui.screens.task_form import TaskFormPanel
 from copilot_team.tui.screens.tree_view import TreeViewPanel
@@ -21,6 +25,9 @@ class Sidebar(Vertical):
             )
             yield Static(
                 "  [bold]Chat[/bold]", id="menu-chat", classes="menu-item"
+            )
+            yield Static(
+                "  [bold]Settings[/bold]", id="menu-settings", classes="menu-item"
             )
         with Vertical(id="sidebar-activity"):
             yield Static("[bold] Activity[/bold]", id="activity-title")
@@ -38,13 +45,24 @@ class CopilotTeamApp(App):
     BINDINGS = [
         Binding("t", "show_tree", "Tasks", show=True),
         Binding("c", "show_chat", "Chat", show=True),
+        Binding("s", "show_settings", "Settings", show=True),
         Binding("n", "new_task", "New Task", show=True),
         Binding("ctrl+q", "quit", "Quit", show=True),
     ]
 
-    def __init__(self, task_store: BaseTaskStoreBackend) -> None:
+    def __init__(
+        self,
+        task_store: BaseTaskStoreBackend,
+        copilot_client: CopilotClient | None = None,
+        settings: Settings | None = None,
+    ) -> None:
         super().__init__()
         self.task_store = task_store
+        self.task_service = TaskService(task_store)
+        self.copilot_client = copilot_client or CopilotClient(
+            {"auto_restart": True, "auto_start": True}
+        )
+        self.settings = settings or Settings()
         self._ctrl_c_count = 0
 
     def compose(self) -> ComposeResult:
@@ -81,6 +99,10 @@ class CopilotTeamApp(App):
         self._update_active_menu("menu-chat")
         self._show_panel(ChatPanel())
 
+    def action_show_settings(self) -> None:
+        self._update_active_menu("menu-settings")
+        self._show_panel(SettingsPanel())
+
     def action_new_task(self) -> None:
         self.show_task_form()
 
@@ -102,6 +124,8 @@ class CopilotTeamApp(App):
                 self.action_show_tree()
             elif widget.id == "menu-chat":
                 self.action_show_chat()
+            elif widget.id == "menu-settings":
+                self.action_show_settings()
 
     async def on_key(self, event) -> None:
         """Handle Ctrl+C double-press to quit."""

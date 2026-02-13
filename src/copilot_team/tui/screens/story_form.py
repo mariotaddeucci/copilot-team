@@ -4,8 +4,8 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, Static
 
-from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story
+from copilot_team.core.services import TaskService
 from copilot_team.tui.pydantic_form import PydanticForm
 
 
@@ -26,8 +26,8 @@ class StoryFormPanel(Vertical):
         self._story = story
 
     @property
-    def task_store(self) -> BaseTaskStoreBackend:
-        return self.app.task_store  # type: ignore[attr-defined]
+    def task_service(self) -> TaskService:
+        return self.app.task_service  # type: ignore[attr-defined]
 
     def compose(self) -> ComposeResult:
         yield PydanticForm(
@@ -59,6 +59,6 @@ class StoryFormPanel(Vertical):
         else:
             story = Story(**data)
 
-        await self.task_store.put_story(story)
+        await self.task_service.save_story(story)
         self.app.notify(f"Story '{data['name']}' saved!", severity="information")
         self.app.action_show_tree()  # type: ignore[attr-defined]
