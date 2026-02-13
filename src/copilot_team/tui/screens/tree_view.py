@@ -203,27 +203,28 @@ class TreeViewPanel(Vertical):
             f"{'Status'}[/]"
         )
 
-    def on_mount(self) -> None:
-        self._refresh_tree()
+    async def on_mount(self) -> None:
+        await self._refresh_tree()
 
-    def _refresh_tree(self) -> None:
+    async def _refresh_tree(self) -> None:
         container = self.query_one("#stories-tree", VerticalScroll)
         container.remove_children()
 
-        stories = self.task_store.list_stories()
+        stories = await self.task_store.list_stories()
         stories.sort()
 
         for story in stories:
             header = StoryHeader(story, expanded=True)
             container.mount(header)
-            tasks = self.task_store.list_tasks(story_id=story.id)
+            tasks = await self.task_store.list_tasks(story_id=story.id)
             tasks.sort()
             for i, task in enumerate(tasks):
                 is_last = i == len(tasks) - 1
                 container.mount(TaskRow(task, is_last=is_last))
 
         # Unassigned tasks section
-        unassigned = [t for t in self.task_store.list_tasks() if t.story_id is None]
+        all_tasks = await self.task_store.list_tasks()
+        unassigned = [t for t in all_tasks if t.story_id is None]
         if unassigned:
             unassigned.sort()
             container.mount(

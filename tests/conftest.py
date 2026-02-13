@@ -11,25 +11,25 @@ class InMemoryTaskStoreBackend(BaseTaskStoreBackend):
         self._stories: dict[str, Story] = {}
         self._tasks: dict[str, Task] = {}
 
-    def put_story(self, story: Story) -> None:
+    async def put_story(self, story: Story) -> None:
         self._stories[story.id] = story
 
-    def get_story(self, id: str) -> Story:
+    async def get_story(self, id: str) -> Story:
         return self._stories[id]
 
-    def list_stories(self, status=None) -> list[Story]:
+    async def list_stories(self, status=None) -> list[Story]:
         stories = list(self._stories.values())
         if status:
             stories = [s for s in stories if s.status == status]
         return stories
 
-    def put_task(self, task: Task) -> None:
+    async def put_task(self, task: Task) -> None:
         self._tasks[task.id] = task
 
-    def get_task(self, id: str) -> Task:
+    async def get_task(self, id: str) -> Task:
         return self._tasks[id]
 
-    def list_tasks(self, status=None, story_id=None) -> list[Task]:
+    async def list_tasks(self, status=None, story_id=None) -> list[Task]:
         tasks = list(self._tasks.values())
         if status:
             tasks = [t for t in tasks if t.status == status]
@@ -53,8 +53,10 @@ def task_store() -> InMemoryTaskStoreBackend:
         description="Main dashboard",
         status="pending",
     )
-    store.put_story(s1)
-    store.put_story(s2)
+
+    # Use synchronous internal access for fixture setup
+    store._stories[s1.id] = s1
+    store._stories[s2.id] = s2
 
     t1 = Task(
         id="t1",
@@ -78,6 +80,6 @@ def task_store() -> InMemoryTaskStoreBackend:
             TaskChecklistItem(description="Backend", completed=False),
         ],
     )
-    store.put_task(t1)
-    store.put_task(t2)
+    store._tasks[t1.id] = t1
+    store._tasks[t2.id] = t2
     return store

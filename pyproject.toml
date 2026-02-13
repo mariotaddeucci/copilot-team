@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite>=0.22.1",
     "github-copilot-sdk>=0.1.23",
     "gitpython>=3.1.46",
     "injector>=0.24.0",
