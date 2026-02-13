@@ -39,13 +39,13 @@ class StoryFormPanel(Vertical):
             yield Button("Save", id="btn-save", variant="primary")
             yield Button("Cancel", id="btn-cancel", variant="error")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-save":
-            self._save_story()
+            await self._save_story()
         elif event.button.id == "btn-cancel":
             self.app.action_show_tree()  # type: ignore[attr-defined]
 
-    def _save_story(self) -> None:
+    async def _save_story(self) -> None:
         form = self.query_one(PydanticForm)
         errors = form.validate()
         if errors:
@@ -59,6 +59,6 @@ class StoryFormPanel(Vertical):
         else:
             story = Story(**data)
 
-        self.task_store.put_story(story)
+        await self.task_store.put_story(story)
         self.app.notify(f"Story '{data['name']}' saved!", severity="information")
         self.app.action_show_tree()  # type: ignore[attr-defined]

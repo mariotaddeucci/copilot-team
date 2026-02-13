@@ -37,16 +37,14 @@ class TaskFormPanel(Vertical):
             exclude={"id", "story_id"},
         )
 
-        # Story field — requires runtime data so it cannot be auto-generated
-        stories = self.task_store.list_stories()
-        story_options = [(s.name, s.id) for s in stories]
+        # Story select — populated async in on_mount
         current_story_id = (
             self._edit_task.story_id if self._edit_task else self._story_id
         ) or Select.BLANK
 
         yield Label("Story:")
         yield Select(
-            story_options,
+            [],
             value=current_story_id,
             allow_blank=True,
             id="task-story",
@@ -56,14 +54,25 @@ class TaskFormPanel(Vertical):
             yield Button("Save", id="btn-save", variant="primary")
             yield Button("Cancel", id="btn-cancel", variant="error")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_mount(self) -> None:
+        stories = await self.task_store.list_stories()
+        story_options = [(s.name, s.id) for s in stories]
+        select = self.query_one("#task-story", Select)
+        select.set_options(story_options)
+        current_story_id = (
+            self._edit_task.story_id if self._edit_task else self._story_id
+        )
+        if current_story_id:
+            select.value = current_story_id
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         btn_id = event.button.id or ""
         if btn_id == "btn-save":
-            self._save_task()
+            await self._save_task()
         elif btn_id == "btn-cancel":
             self.app.action_show_tree()  # type: ignore[attr-defined]
 
-    def _save_task(self) -> None:
+    async def _save_task(self) -> None:
         form = self.query_one(PydanticForm)
         errors = form.validate()
         if errors:
@@ -81,6 +90,6 @@ class TaskFormPanel(Vertical):
         else:
             task = Task(**data)
 
-        self.task_store.put_task(task)
+        await self.task_store.put_task(task)
         self.app.notify(f"Task '{data['name']}' saved!", severity="information")
         self.app.action_show_tree()  # type: ignore[attr-defined]

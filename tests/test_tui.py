@@ -140,7 +140,7 @@ async def test_story_form_save(task_store: InMemoryTaskStoreBackend):
 
         assert app.query_one(TreeViewPanel)
 
-        stories = task_store.list_stories()
+        stories = await task_store.list_stories()
         names = [s.name for s in stories]
         assert "New Story" in names
 
@@ -200,7 +200,7 @@ async def test_unassigned_tasks_section(task_store: InMemoryTaskStoreBackend):
     """Tasks without a story_id should appear under 'Unassigned Tasks'."""
     from copilot_team.core.models import Task
 
-    task_store.put_task(
+    await task_store.put_task(
         Task(id="orphan", name="Orphan Task", description="No story", status="pending")
     )
     app = CopilotTeamApp(task_store=task_store)
