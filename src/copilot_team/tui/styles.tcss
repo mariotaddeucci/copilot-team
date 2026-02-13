@@ -36,8 +36,8 @@ Screen {
 #sidebar {
     width: 22;
     height: 100%;
-    background: $dracula-bg;
-    border-right: round $dracula-current;
+    background: #1e1f29;
+    border-right: solid #2d303d;
     padding: 1 0 0 0;
 }
 
@@ -68,7 +68,7 @@ Screen {
     height: auto;
     max-height: 10;
     padding: 1 0;
-    border-top: round $dracula-current;
+    border-top: solid #2d303d;
 }
 
 #activity-title {
@@ -87,8 +87,9 @@ Screen {
 
 #content-area {
     width: 1fr;
-    height: 100%;
+    height: 1fr;
     padding: 0;
+    overflow: hidden;
 }
 
 /* ── Tree View ───────────────────────────────────────── */
@@ -97,8 +98,8 @@ Screen {
     height: 3;
     padding: 0 1;
     align: right middle;
-    background: $dracula-bg;
-    border-bottom: round $dracula-current;
+    background: $dracula-bg-dark;
+    border-bottom: solid #2d303d;
 }
 
 #tree-title {
@@ -112,27 +113,29 @@ Screen {
     min-width: 8;
     height: 1;
     margin: 0 0 0 1;
-    background: $dracula-current;
-    color: $dracula-comment;
+    background: $dracula-pink;
+    color: $dracula-fg;
     border: none;
+    text-style: bold;
 }
 
 #tree-toolbar Button:hover {
-    background: $dracula-comment;
+    background: $dracula-purple;
     color: $dracula-fg;
 }
 
 #table-header {
     height: 1;
     padding: 0 1;
-    background: $dracula-bg;
+    background: #2d303d;
     color: $dracula-comment;
+    text-style: bold;
 }
 
 #stories-tree {
     height: 1fr;
     width: 100%;
-    background: transparent;
+    background: $dracula-bg-dark;
     padding: 0;
     scrollbar-color: $dracula-current;
     scrollbar-color-hover: $dracula-comment;
@@ -143,11 +146,11 @@ Screen {
     height: 1;
     padding: 0 0;
     color: $dracula-fg;
-    background: transparent;
+    background: #2d303d;
 }
 
 .story-header:hover {
-    background: $dracula-current 40%;
+    background: $dracula-current;
 }
 
 .task-row {
@@ -158,7 +161,7 @@ Screen {
 }
 
 .task-row:hover {
-    background: $dracula-current;
+    background: #343746;
 }
 
 /* ── Forms ────────────────────────────────────────────── */
@@ -260,26 +263,38 @@ Button {
 }
 
 Button.-primary {
-    background: $dracula-purple;
+    background: $dracula-pink;
     color: $dracula-fg;
-    border: round $dracula-purple;
+    border: round $dracula-pink;
+    text-style: bold;
 }
 
 Button.-primary:hover {
-    background: $dracula-pink;
-    border: round $dracula-pink;
+    background: $dracula-purple;
+    border: round $dracula-purple;
 }
 
 Button.-error {
-    background: $dracula-red 20%;
+    background: $dracula-current;
+    color: $dracula-comment;
+    border: round $dracula-current;
+}
+
+Button.-error:hover {
+    background: $dracula-red 40%;
     color: $dracula-red;
-    border: round $dracula-red 30%;
 }
 
 Button.-success {
-    background: $dracula-green 20%;
-    color: $dracula-green;
-    border: round $dracula-green 30%;
+    background: $dracula-pink;
+    color: $dracula-fg;
+    border: round $dracula-pink;
+    text-style: bold;
+}
+
+Button.-success:hover {
+    background: $dracula-purple;
+    border: round $dracula-purple;
 }
 
 /* ── Chat ─────────────────────────────────────────────── */

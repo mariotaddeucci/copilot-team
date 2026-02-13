@@ -141,6 +141,10 @@ class TaskFormPanel(Vertical):
             except ValueError:
                 pass
 
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.input.id == "checklist-new-input":
+            self._add_checklist_item()
+
     def _add_checklist_item(self) -> None:
         inp = self.query_one("#checklist-new-input", Input)
         text = inp.value.strip()
