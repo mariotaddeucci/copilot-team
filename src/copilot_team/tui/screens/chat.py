@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Input, RichLog, Select, Static
+from textual.widgets import Button, Input, RichLog, Select
+
+from copilot_team.core.services import ChatService
 
 if TYPE_CHECKING:
     from copilot import CopilotClient
@@ -32,7 +34,7 @@ class ChatPanel(Vertical):
     def __init__(self) -> None:
         super().__init__()
         self._session = None
-        self._processing = False
+        self._chat_service = ChatService()
 
     @property
     def _copilot_client(self) -> CopilotClient:
@@ -96,26 +98,40 @@ class ChatPanel(Vertical):
         message = input_widget.value.strip()
         if not message:
             return
-        if self._processing:
-            self.app.notify("Please wait for the current response.", severity="warning")
-            return
         input_widget.value = ""
         log = self.query_one("#chat-log", RichLog)
-        log.write(f"[bold cyan]You:[/bold cyan] {message}")
-        self.run_worker(self._async_send(message), exclusive=True)
+        enqueued = self._chat_service.enqueue_message(message)
+        status = " [dim](enqueue)[/dim]" if enqueued else ""
+        log.write(f"[bold cyan]You{status}:[/bold cyan] {message}")
+        if not self._chat_service.is_processing:
+            self.run_worker(self._async_process_queue(), exclusive=True)
+
+    async def _async_process_queue(self) -> None:
+        self._chat_service.set_processing(True)
+        try:
+            while message := self._chat_service.next_message():
+                await self._async_send(message)
+        finally:
+            self._chat_service.set_processing(False)
 
     async def _async_send(self, message: str) -> None:
-        self._processing = True
         log = self.query_one("#chat-log", RichLog)
         try:
             if self._session is None:
                 await self._ensure_session()
             done = asyncio.Event()
             response_parts: list[str] = []
+            received_delta = False
 
             def handler(event):
+                nonlocal received_delta
                 if event.type == "assistant.message.delta":
                     response_parts.append(event.data.delta_content)
+                    if event.data.delta_content:
+                        received_delta = True
+                        log.write(
+                            f"[bold green]Assistant:[/bold green] {event.data.delta_content}"
+                        )
                 elif event.type == "assistant.message":
                     response_parts.clear()
                     response_parts.append(event.data.content)
@@ -127,7 +143,7 @@ class ChatPanel(Vertical):
 
             unsubscribe = self._session.on(handler)
             try:
-                await self._session.send({"prompt": message})
+                await self._session.send({"prompt": message, "mode": "enqueue"})
                 await asyncio.wait_for(done.wait(), timeout=120.0)
             except asyncio.TimeoutError:
                 log.write("[yellow]Response timed out.[/yellow]")
@@ -136,13 +152,14 @@ class ChatPanel(Vertical):
 
             if response_parts:
                 full = "".join(response_parts)
-                log.write(f"[bold green]Assistant:[/bold green] {full}")
+                if not full:
+                    log.write("[dim]No response received.[/dim]")
+                elif not received_delta:
+                    log.write(f"[bold green]Assistant:[/bold green] {full}")
             else:
                 log.write("[dim]No response received.[/dim]")
         except Exception as exc:
             log.write(f"[red]Error: {exc}[/red]")
-        finally:
-            self._processing = False
 
     async def _ensure_session(self) -> None:
         from copilot_team.tui.chat_tools import build_task_tools
