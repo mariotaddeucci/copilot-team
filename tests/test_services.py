@@ -2,8 +2,8 @@
 
 import pytest
 
-from copilot_team.core.models import Story, Task, TaskChecklistItem
-from copilot_team.core.services import TaskService
+from copilot_team.core.models import Story, Task
+from copilot_team.core.services import ChatService, TaskService
 from tests.conftest import InMemoryTaskStoreBackend
 
 
@@ -108,3 +108,26 @@ async def test_save_task(svc: TaskService, store: InMemoryTaskStoreBackend):
     result = await svc.save_task(task)
     assert result.id == "t3"
     assert "t3" in store._tasks
+
+
+def test_chat_service_enqueue_and_pop():
+    chat = ChatService()
+    assert not chat.is_processing
+    assert chat.enqueue_message("hello") is False
+    assert not chat.is_processing
+    assert chat.enqueue_message("world") is True
+    assert not chat.is_processing
+    assert chat.next_message() == "hello"
+    assert not chat.is_processing
+    assert chat.next_message() == "world"
+    assert not chat.is_processing
+    assert chat.next_message() is None
+
+
+def test_chat_service_enqueue_while_processing():
+    chat = ChatService()
+    chat.set_processing(True)
+    assert chat.enqueue_message("queued") is True
+    assert chat.next_message() == "queued"
+    chat.set_processing(False)
+    assert not chat.is_processing

@@ -7,6 +7,8 @@ paths.
 
 from __future__ import annotations
 
+from collections import deque
+
 from injector import Inject
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
@@ -72,3 +74,28 @@ class TaskService:
     async def save_task(self, task: Task) -> Task:
         await self._store.put_task(task)
         return task
+
+
+class ChatService:
+    """State and queue management for chat message flow."""
+
+    def __init__(self) -> None:
+        self._processing = False
+        self._messages: deque[str] = deque()
+
+    @property
+    def is_processing(self) -> bool:
+        return self._processing
+
+    def set_processing(self, processing: bool) -> None:
+        self._processing = processing
+
+    def enqueue_message(self, message: str) -> bool:
+        was_enqueued = self._processing or bool(self._messages)
+        self._messages.append(message)
+        return was_enqueued
+
+    def next_message(self) -> str | None:
+        if not self._messages:
+            return None
+        return self._messages.popleft()
