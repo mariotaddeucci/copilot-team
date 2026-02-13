@@ -7,13 +7,6 @@ from textual.widgets import Button, Static
 from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, Task
 
-# Column widths for the tabular layout
-COL_NAME = 32
-COL_AGENT = 16
-COL_REPO = 20
-COL_CHECK = 10
-COL_STATUS = 14
-
 
 def _status_icon(status: str) -> str:
     icons = {
@@ -37,13 +30,6 @@ def _status_color(status: str) -> str:
     return colors.get(status, "#f8f8f2")
 
 
-def _pad(text: str, width: int) -> str:
-    """Pad or truncate text to exact width for alignment."""
-    if len(text) >= width:
-        return text[: width - 1] + "…"
-    return text + " " * (width - len(text))
-
-
 class StoryHeader(Static):
     """Clickable collapsible story header row."""
 
@@ -57,11 +43,15 @@ class StoryHeader(Static):
         icon = _status_icon(self._story.status)
         color = _status_color(self._story.status)
         arrow = "▾" if self._expanded else "▸"
-        name_text = _pad(self._story.name, COL_NAME)
-        desc = self._story.description or ""
-        if len(desc) > 40:
-            desc = desc[:39] + "…"
-        return f" [{color}]{arrow}[/] [{color}]{icon}[/] [{color} bold]{name_text}[/] [dim]{desc}[/]"
+        name = self._story.name
+        status = self._story.status
+        return (
+            f"  [{color}]{arrow} {icon}[/]  "
+            f"[bold]{name}[/]"
+            f"  [dim]—[/] [dim italic]{self._story.description or ''}[/]"
+            f"                                                             "
+            f"[{color}]{status}[/]"
+        )
 
     def toggle(self) -> bool:
         self._expanded = not self._expanded
@@ -78,7 +68,7 @@ class StoryHeader(Static):
 
 
 class TaskRow(Static):
-    """A single task row in tabular format."""
+    """A single task row in the tree."""
 
     def __init__(self, task: Task) -> None:
         self._data = task
@@ -88,14 +78,21 @@ class TaskRow(Static):
     def _render_label(self) -> str:
         icon = _status_icon(self._data.status)
         color = _status_color(self._data.status)
-        name = _pad(self._data.name, COL_NAME)
-        agent = _pad(self._data.agent or "-", COL_AGENT)
-        repo = _pad(self._data.repository_name or "-", COL_REPO)
+        name = self._data.name
+        agent = self._data.agent or "-"
+        repo = self._data.repository_name or "-"
         total = len(self._data.checklist)
         done = sum(1 for c in self._data.checklist if c.completed)
-        check = _pad(f"{done}/{total}" if total else "-", COL_CHECK)
-        status = _pad(self._data.status, COL_STATUS)
-        return f"      [{color}]{icon}[/] [{color}]{name}[/] [dim]{agent}[/] [dim]{repo}[/] [#bd93f9]{check}[/] [{color}]{status}[/]"
+        check = f"{done}/{total}" if total else "-"
+        status = self._data.status
+        return (
+            f"       [{color}]{icon}[/]  "
+            f"[{color}]{name:<28s}[/]"
+            f"[dim]{agent:<14s}[/]"
+            f"[dim]{repo:<18s}[/]"
+            f"[#bd93f9]{check:<8s}[/]"
+            f"[{color}]{status}[/]"
+        )
 
     @property
     def task_data(self) -> Task:
@@ -103,7 +100,7 @@ class TaskRow(Static):
 
 
 class TreeViewPanel(Vertical):
-    """Panel showing stories and tasks in a tabular collapsible layout."""
+    """Panel showing stories and tasks in a clean collapsible layout."""
 
     DEFAULT_CSS = """
     TreeViewPanel {
@@ -118,19 +115,20 @@ class TreeViewPanel(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree-toolbar"):
-            yield Static("[bold] Stories & Tasks[/bold]", id="tree-title")
-            yield Button("+Story", id="btn-new-story", variant="default")
-            yield Button("+Task", id="btn-new-task", variant="default")
+            yield Static("", id="tree-spacer")
+            yield Button(" + Story ", id="btn-new-story", variant="default")
+            yield Button(" + Task ", id="btn-new-task", variant="default")
         yield Static(self._header_row(), id="table-header")
         yield VerticalScroll(id="stories-tree")
 
     def _header_row(self) -> str:
-        name = _pad("Name", COL_NAME + 7)
-        agent = _pad("Agent", COL_AGENT)
-        repo = _pad("Repository", COL_REPO)
-        check = _pad("Check", COL_CHECK)
-        status = _pad("Status", COL_STATUS)
-        return f" [bold #6272a4]{name}{agent}{repo}{check}{status}[/]"
+        return (
+            f"  [bold #bd93f9]{'Name':<36s}"
+            f"{'Agent':<14s}"
+            f"{'Repository':<18s}"
+            f"{'Check':<8s}"
+            f"{'Status'}[/]"
+        )
 
     def on_mount(self) -> None:
         self._refresh_tree()
@@ -158,7 +156,7 @@ class TreeViewPanel(Vertical):
             unassigned.sort()
             container.mount(
                 Static(
-                    " [#ffb86c]▾[/] [#ffb86c bold]Unassigned[/]",
+                    "  [#ffb86c]▾ ○[/]  [bold #ffb86c]Unassigned[/]",
                     id="unassigned-header",
                     classes="story-header",
                 )

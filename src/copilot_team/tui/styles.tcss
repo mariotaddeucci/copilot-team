@@ -72,7 +72,7 @@ Screen {
 }
 
 #activity-title {
-    color: $dracula-orange;
+    color: $dracula-comment;
     height: 1;
     padding: 0 1;
 }
@@ -96,27 +96,25 @@ Screen {
 
 #tree-toolbar {
     height: 3;
-    padding: 0 1;
+    padding: 0 2;
     align: right middle;
     background: $dracula-bg-dark;
-    border-bottom: solid #2d303d;
 }
 
-#tree-title {
+#tree-spacer {
     width: 1fr;
-    color: $dracula-fg;
-    content-align-vertical: middle;
-    padding: 0 1;
+    height: 1;
 }
 
 #tree-toolbar Button {
-    min-width: 8;
+    min-width: 10;
     height: 1;
     margin: 0 0 0 1;
     background: $dracula-pink;
     color: $dracula-fg;
     border: none;
     text-style: bold;
+    content-align: center middle;
 }
 
 #tree-toolbar Button:hover {
@@ -126,9 +124,9 @@ Screen {
 
 #table-header {
     height: 1;
-    padding: 0 1;
-    background: #2d303d;
-    color: $dracula-comment;
+    padding: 0 0;
+    background: $dracula-current;
+    color: $dracula-purple;
     text-style: bold;
 }
 
@@ -146,7 +144,7 @@ Screen {
     height: 1;
     padding: 0 0;
     color: $dracula-fg;
-    background: #2d303d;
+    background: #282a36;
 }
 
 .story-header:hover {
@@ -161,7 +159,7 @@ Screen {
 }
 
 .task-row:hover {
-    background: #343746;
+    background: #2d303d;
 }
 
 /* ── Forms ────────────────────────────────────────────── */
@@ -259,25 +257,24 @@ SelectCurrent:focus {
 }
 
 Button {
-    border: round $dracula-current;
+    border: none;
+    content-align: center middle;
 }
 
 Button.-primary {
     background: $dracula-pink;
     color: $dracula-fg;
-    border: round $dracula-pink;
     text-style: bold;
+    content-align: center middle;
 }
 
 Button.-primary:hover {
     background: $dracula-purple;
-    border: round $dracula-purple;
 }
 
 Button.-error {
     background: $dracula-current;
     color: $dracula-comment;
-    border: round $dracula-current;
 }
 
 Button.-error:hover {
@@ -288,13 +285,12 @@ Button.-error:hover {
 Button.-success {
     background: $dracula-pink;
     color: $dracula-fg;
-    border: round $dracula-pink;
     text-style: bold;
+    content-align: center middle;
 }
 
 Button.-success:hover {
     background: $dracula-purple;
-    border: round $dracula-purple;
 }
 
 /* ── Chat ─────────────────────────────────────────────── */
