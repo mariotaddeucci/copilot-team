@@ -30,6 +30,10 @@ class TaskFormPanel(Vertical):
     def task_store(self) -> BaseTaskStoreBackend:
         return self.app.task_store  # type: ignore[attr-defined]
 
+    @property
+    def _current_story_id(self) -> str | None:
+        return self._edit_task.story_id if self._edit_task else self._story_id
+
     def compose(self) -> ComposeResult:
         yield PydanticForm(
             model_class=Task,
@@ -38,14 +42,10 @@ class TaskFormPanel(Vertical):
         )
 
         # Story select — populated async in on_mount
-        current_story_id = (
-            self._edit_task.story_id if self._edit_task else self._story_id
-        ) or Select.BLANK
-
         yield Label("Story:")
         yield Select(
             [],
-            value=current_story_id,
+            value=self._current_story_id or Select.BLANK,
             allow_blank=True,
             id="task-story",
         )
@@ -59,11 +59,8 @@ class TaskFormPanel(Vertical):
         story_options = [(s.name, s.id) for s in stories]
         select = self.query_one("#task-story", Select)
         select.set_options(story_options)
-        current_story_id = (
-            self._edit_task.story_id if self._edit_task else self._story_id
-        )
-        if current_story_id:
-            select.value = current_story_id
+        if self._current_story_id:
+            select.value = self._current_story_id
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         btn_id = event.button.id or ""

@@ -32,7 +32,7 @@ class SqliteTaskStoreBackend(BaseTaskStoreBackend):
 
     async def _create_tables(self) -> None:
         self._logger.debug("Creating tables if not exists")
-        conn = await self._get_conn() if self._conn is None else self._conn
+        conn = self._conn
         await conn.executescript("""
             CREATE TABLE IF NOT EXISTS story (
                 id TEXT PRIMARY KEY,
