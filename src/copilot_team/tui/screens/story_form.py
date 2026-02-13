@@ -8,7 +8,7 @@ from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Story, StoryStatus
 
 STORY_STATUSES: list[StoryStatus] = [
-    "created",
+    "pending",
     "planning",
     "ready",
     "in_progress",
@@ -50,7 +50,7 @@ class StoryFormPanel(Vertical):
         yield Label("Status:")
         yield Select(
             [(s, s) for s in STORY_STATUSES],
-            value=self._story.status if self._story else "created",
+            value=self._story.status if self._story else "pending",
             id="story-status",
         )
         with Static(classes="form-buttons"):

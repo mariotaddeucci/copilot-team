@@ -10,7 +10,7 @@ def setup():
 
     # Stories
     s1 = Story(id="s1", name="User Authentication", description="Implement login/signup flow", status="in_progress")
-    s2 = Story(id="s2", name="Dashboard", description="Build main dashboard view", status="created")
+    s2 = Story(id="s2", name="Dashboard", description="Build main dashboard view", status="pending")
     s3 = Story(id="s3", name="API Integration", description="REST API endpoints", status="completed")
     s4 = Story(id="s4", name="Settings Page", description="User preferences and config", status="planning")
     s5 = Story(id="s5", name="Notifications", description="Push and in-app notifications", status="ready")
@@ -36,17 +36,17 @@ def setup():
     ))
     task_store.put_task(Task(
         id="t3", name="OAuth integration", description="Google/GitHub OAuth", story_id="s1",
-        status="created", agent="copilot", repository_name="auth-service",
+        status="pending", agent="copilot", repository_name="auth-service",
     ))
 
     # Tasks for Dashboard
     task_store.put_task(Task(
         id="t4", name="Dashboard layout", description="Main grid layout", story_id="s2",
-        status="created", agent="designer", repository_name="ui-kit",
+        status="pending", agent="designer", repository_name="ui-kit",
     ))
     task_store.put_task(Task(
         id="t5", name="Metrics widgets", description="KPI cards and charts", story_id="s2",
-        status="created", agent="copilot", repository_name="frontend-app",
+        status="pending", agent="copilot", repository_name="frontend-app",
     ))
 
     # Tasks for API Integration
@@ -75,7 +75,7 @@ def setup():
     ))
     task_store.put_task(Task(
         id="t9", name="Theme selector", description="Dark/light mode toggle", story_id="s4",
-        status="created", agent="designer", repository_name="ui-kit",
+        status="pending", agent="designer", repository_name="ui-kit",
     ))
 
     # Tasks for Notifications
@@ -96,11 +96,11 @@ def setup():
     ))
     task_store.put_task(Task(
         id="t12", name="Update README", description="Project documentation",
-        status="created",
+        status="pending",
     ))
     task_store.put_task(Task(
         id="t13", name="Dependency audit", description="Check outdated packages",
-        status="created", agent="copilot", repository_name="frontend-app",
+        status="pending", agent="copilot", repository_name="frontend-app",
     ))
 
 

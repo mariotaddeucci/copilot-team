@@ -8,7 +8,7 @@ from copilot_team.core.interfaces import BaseTaskStoreBackend
 from copilot_team.core.models import Task, TaskChecklistItem, TaskStatus
 
 TASK_STATUSES: list[TaskStatus] = [
-    "created",
+    "pending",
     "planning",
     "ready",
     "in_progress",
@@ -76,7 +76,7 @@ class TaskFormPanel(Vertical):
         yield Label("Status:")
         yield Select(
             [(s, s) for s in TASK_STATUSES],
-            value=self._edit_task.status if self._edit_task else "created",
+            value=self._edit_task.status if self._edit_task else "pending",
             id="task-status",
         )
         yield Label("Story:")
