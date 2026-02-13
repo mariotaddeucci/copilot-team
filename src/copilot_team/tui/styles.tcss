@@ -115,30 +115,51 @@ Screen {
 
 /* ── Tree View ───────────────────────────────────────── */
 
-Tree {
-    background: transparent;
+#tree-toolbar {
+    height: auto;
+    padding: 0 1 1 1;
+    dock: top;
+}
+
+#tree-toolbar Button {
+    margin: 0 1;
+}
+
+#table-header {
+    height: 1;
     padding: 0 1;
-    scrollbar-color: $dracula-current;
-    scrollbar-color-hover: $dracula-comment;
-    scrollbar-color-active: $dracula-purple;
-}
-
-Tree > .tree--guides {
-    color: $dracula-comment;
-}
-
-Tree > .tree--cursor {
     background: $dracula-current;
-    color: $dracula-fg;
+    color: $dracula-purple;
     text-style: bold;
 }
 
-Tree > .tree--highlight {
-    background: $dracula-current;
+#stories-tree {
+    height: 1fr;
+    width: 100%;
+    background: transparent;
+    padding: 0;
 }
 
-Tree > .tree--highlight-line {
-    background: $dracula-current 30%;
+.story-header {
+    height: 1;
+    padding: 0 1;
+    color: $dracula-fg;
+    background: transparent;
+}
+
+.story-header:hover {
+    background: $dracula-current 50%;
+}
+
+.task-row {
+    height: 1;
+    padding: 0 1;
+    color: $dracula-fg;
+    background: transparent;
+}
+
+.task-row:hover {
+    background: $dracula-current;
 }
 
 /* ── Forms ────────────────────────────────────────────── */
@@ -191,6 +212,48 @@ SelectCurrent:focus {
 
 .form-buttons Button {
     margin: 0 1;
+}
+
+/* ── Checklist Editor ────────────────────────────────── */
+
+#checklist-container {
+    height: auto;
+    max-height: 12;
+    padding: 0;
+}
+
+.checklist-row {
+    height: 3;
+    padding: 0;
+    layout: horizontal;
+}
+
+.checklist-row Checkbox {
+    width: 1fr;
+}
+
+.checklist-delete {
+    width: 5;
+    min-width: 5;
+    height: 3;
+    background: $dracula-red 20%;
+    color: $dracula-red;
+    border: round $dracula-red 30%;
+}
+
+#checklist-add-bar {
+    height: auto;
+    padding: 0;
+    layout: horizontal;
+}
+
+#checklist-new-input {
+    width: 1fr;
+}
+
+#checklist-add-bar Button {
+    width: auto;
+    margin-left: 1;
 }
 
 Button {
