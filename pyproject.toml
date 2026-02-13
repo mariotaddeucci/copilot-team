@@ -36,3 +36,9 @@ dev = [
     "ruff>=0.15.0",
     "taskipy>=1.14.1",
 ]
+
+[tool.taskipy.tasks]
+lint = "ruff check . && ruff format --check . && pyrefly check"
+fix = "ruff check --fix . && ruff format ."
+test = "pytest"
+
