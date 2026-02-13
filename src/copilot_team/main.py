@@ -107,10 +107,19 @@ async def setup():
 
 
 def main():
+    from copilot import CopilotClient
+
+    from copilot_team.core.settings import Settings
     from copilot_team.tui.app import CopilotTeamApp
 
     task_store = injector.get(BaseTaskStoreBackend)
-    app = CopilotTeamApp(task_store=task_store)
+    copilot_client = injector.get(CopilotClient)
+    settings = injector.get(Settings)
+    app = CopilotTeamApp(
+        task_store=task_store,
+        copilot_client=copilot_client,
+        settings=settings,
+    )
     app.run()
 
 

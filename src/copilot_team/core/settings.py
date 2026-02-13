@@ -15,6 +15,15 @@ class CoreImplementationSettings(BaseModel):
     )
 
 
+class ChatSettings(BaseModel):
+    default_model: str = Field(default="auto", description="Modelo padrão para o chat")
+
+
+class CopilotSettings(BaseModel):
+    max_chat_sessions: int = Field(default=1, description="Limite de sessões concorrentes de chat")
+    max_background_agents: int = Field(default=2, description="Limite de agentes em background")
+
+
 class CoreSettings(BaseModel):
     workdir: Path = Field(default_factory=lambda: Path.cwd() / ".copilot_team")
     repositories: dict[str, HttpUrl] = Field(default_factory=dict)
@@ -27,3 +36,5 @@ class Settings(BaseSettings):
     app_name: str = "copilot-team"
     logger: LoggerSettings = LoggerSettings()
     core: CoreSettings = CoreSettings()
+    chat: ChatSettings = ChatSettings()
+    copilot: CopilotSettings = CopilotSettings()
