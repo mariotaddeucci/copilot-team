@@ -31,16 +31,18 @@ def _status_color(status: str) -> str:
 
 
 # Column widths for tabular alignment
-COL_NAME = 30
+COL_NAME = 88
 COL_AGENT = 14
-COL_REPO = 18
-COL_CHECK = 8
+COL_REPO = 20
+COL_CHECK = 12
 # Story header prefix: "  ▾ ● " = 6 visible chars + spaces
 STORY_PREFIX_LEN = 6
 # Task tree prefix: " ├─ ●  " = 7 visible chars + spaces
 TASK_PREFIX_LEN = 9
 # Checklist tree prefix: " │  ├─ ✓  " = deeper indent
 CHECK_PREFIX_LEN = 12
+# Total visible width before the Status column (must be consistent across all row types)
+TOTAL_WIDTH = COL_NAME + STORY_PREFIX_LEN + 2 + COL_AGENT + COL_REPO + COL_CHECK
 
 
 class StoryHeader(Static):
@@ -60,7 +62,7 @@ class StoryHeader(Static):
         desc = self._story.description or ""
         name_col = f"{name}  — {desc}" if desc else name
         status = self._story.status
-        remaining = COL_NAME + COL_AGENT + COL_REPO + COL_CHECK - STORY_PREFIX_LEN
+        remaining = TOTAL_WIDTH - STORY_PREFIX_LEN
         return (
             f" [{color}]{arrow} {icon}[/]  "
             f"[bold]{name_col:<{remaining}s}[/]"
@@ -103,10 +105,11 @@ class TaskRow(Static):
         check = f"{done}/{total}" if total else "-"
         status = self._data.status
         has_checklist = bool(self._data.checklist)
-        arrow = ""
         if has_checklist:
             arrow = " ▾" if self._expanded else " ▸"
-        name_w = COL_NAME - TASK_PREFIX_LEN + STORY_PREFIX_LEN
+        else:
+            arrow = "  "
+        name_w = TOTAL_WIDTH - TASK_PREFIX_LEN - COL_AGENT - COL_REPO - COL_CHECK
         return (
             f" [#75715E]{connector}[/] [{color}]{icon}[/]{arrow} "
             f"[{color}]{name:<{name_w}s}[/]"
@@ -139,7 +142,10 @@ class ChecklistRow(Static):
     """A single checklist item row (third level) in the tree."""
 
     def __init__(
-        self, description: str, completed: bool, is_last_check: bool,
+        self,
+        description: str,
+        completed: bool,
+        is_last_check: bool,
         parent_is_last_task: bool,
     ) -> None:
         self._description = description
@@ -217,9 +223,7 @@ class TreeViewPanel(Vertical):
                 container.mount(TaskRow(task, is_last=is_last))
 
         # Unassigned tasks section
-        unassigned = [
-            t for t in self.task_store.list_tasks() if t.story_id is None
-        ]
+        unassigned = [t for t in self.task_store.list_tasks() if t.story_id is None]
         if unassigned:
             unassigned.sort()
             container.mount(
@@ -252,8 +256,7 @@ class TreeViewPanel(Vertical):
                     task_ids.add(row.task_data.id)
             for chk in self.query(".checklist-tree-row"):
                 if any(
-                    chk.id and chk.id.startswith(f"chk-tree-{tid}-")
-                    for tid in task_ids
+                    chk.id and chk.id.startswith(f"chk-tree-{tid}-") for tid in task_ids
                 ):
                     chk.display = False
             # Reset expanded state on tasks when collapsing
@@ -273,7 +276,8 @@ class TreeViewPanel(Vertical):
         container = self.query_one("#stories-tree", VerticalScroll)
         task_id = task_row.task_data.id
         existing = [
-            w for w in container.query(".checklist-tree-row")
+            w
+            for w in container.query(".checklist-tree-row")
             if w.id and w.id.startswith(f"chk-tree-{task_id}-")
         ]
         if show and not existing:
