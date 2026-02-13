@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 from textual.app import App, ComposeResult
-from textual.widgets import Button, Checkbox, Input, Select, Static, TextArea
+from textual.widgets import Checkbox, Input, Select, TextArea
 
 from copilot_team.tui.pydantic_form import (
     PydanticForm,
@@ -42,8 +42,6 @@ class _FormTestApp(App):
 
     def compose(self) -> ComposeResult:
         yield self._form
-        with Static(classes="form-buttons"):
-            yield Button("Save", id="btn-save", variant="primary")
 
 
 # ── Type-introspection helpers ───────────────────────────────────────────
