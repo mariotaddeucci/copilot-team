@@ -225,29 +225,36 @@ SelectCurrent:focus {
     margin: 0 1;
 }
 
-/* ── Checklist Editor ────────────────────────────────── */
+/* ── SubModel List (auto-generated from Pydantic) ───── */
 
-#checklist-container {
+SubModelList {
     height: auto;
-    max-height: 10;
+    max-height: 12;
     padding: 0;
 }
 
-.checklist-row {
+.submodel-row {
     height: 1;
     padding: 0;
     layout: horizontal;
 }
 
-.checklist-row Checkbox {
-    width: 1fr;
+.submodel-row Checkbox {
+    width: auto;
     height: 1;
     padding: 0;
     border: none;
     background: transparent;
 }
 
-.checklist-delete {
+.submodel-cell {
+    width: 1fr;
+    height: 1;
+    padding: 0 1;
+    color: $monokai-fg;
+}
+
+.submodel-delete {
     width: 5;
     min-width: 5;
     height: 1;
@@ -256,17 +263,17 @@ SelectCurrent:focus {
     border: none;
 }
 
-#checklist-add-bar {
+.submodel-add-bar {
     height: auto;
     padding: 0;
     layout: horizontal;
 }
 
-#checklist-new-input {
+.submodel-add-bar Input {
     width: 1fr;
 }
 
-#checklist-add-bar Button {
+.submodel-add-bar Button {
     width: auto;
     margin-left: 1;
 }

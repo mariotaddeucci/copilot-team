@@ -2,18 +2,11 @@ from __future__ import annotations
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, Input, Label, Select, Static, TextArea
+from textual.widgets import Button, Static
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
-from copilot_team.core.models import Story, StoryStatus
-
-STORY_STATUSES: list[StoryStatus] = [
-    "pending",
-    "planning",
-    "ready",
-    "in_progress",
-    "completed",
-]
+from copilot_team.core.models import Story
+from copilot_team.tui.pydantic_form import PydanticForm
 
 
 class StoryFormPanel(Vertical):
@@ -24,6 +17,7 @@ class StoryFormPanel(Vertical):
         height: 1fr;
         width: 1fr;
         padding: 1 2;
+        overflow-y: auto;
     }
     """
 
@@ -36,22 +30,10 @@ class StoryFormPanel(Vertical):
         return self.app.task_store  # type: ignore[attr-defined]
 
     def compose(self) -> ComposeResult:
-        yield Label("Name:")
-        yield Input(
-            value=self._story.name if self._story else "",
-            placeholder="Story name",
-            id="story-name",
-        )
-        yield Label("Description:")
-        yield TextArea(
-            self._story.description if self._story else "",
-            id="story-description",
-        )
-        yield Label("Status:")
-        yield Select(
-            [(s, s) for s in STORY_STATUSES],
-            value=self._story.status if self._story else "pending",
-            id="story-status",
+        yield PydanticForm(
+            model_class=Story,
+            instance=self._story,
+            exclude={"id"},
         )
         with Static(classes="form-buttons"):
             yield Button("Save", id="btn-save", variant="primary")
@@ -64,24 +46,19 @@ class StoryFormPanel(Vertical):
             self.app.action_show_tree()  # type: ignore[attr-defined]
 
     def _save_story(self) -> None:
-        name = self.query_one("#story-name", Input).value.strip()
-        description = self.query_one("#story-description", TextArea).text.strip()
-        status = self.query_one("#story-status", Select).value
+        form = self.query_one(PydanticForm)
+        errors = form.validate()
+        if errors:
+            self.app.notify(errors[0], severity="error")
+            return
 
-        if not name:
-            self.app.notify("Name is required", severity="error")
-            return
-        if not description:
-            self.app.notify("Description is required", severity="error")
-            return
+        data = form.get_form_data()
 
         if self._story:
-            story = self._story.model_copy(
-                update={"name": name, "description": description, "status": status}
-            )
+            story = self._story.model_copy(update=data)
         else:
-            story = Story(name=name, description=description, status=status)
+            story = Story(**data)
 
         self.task_store.put_story(story)
-        self.app.notify(f"Story '{name}' saved!", severity="information")
+        self.app.notify(f"Story '{data['name']}' saved!", severity="information")
         self.app.action_show_tree()  # type: ignore[attr-defined]
