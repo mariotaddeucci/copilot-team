@@ -6,6 +6,7 @@ from copilot import CopilotClient
 from injector import Binder, Inject, Injector, Module, singleton
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
+from copilot_team.core.services import TaskService
 from copilot_team.core.settings import Settings
 
 
@@ -60,6 +61,11 @@ class Dependencies(Module):
         binder.bind(
             BaseTaskStoreBackend,
             to=create_factory("task_store", BaseTaskStoreBackend),
+            scope=singleton,
+        )
+        binder.bind(
+            TaskService,
+            to=lambda injector: TaskService(injector.get(BaseTaskStoreBackend)),
             scope=singleton,
         )
 

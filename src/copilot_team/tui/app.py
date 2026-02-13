@@ -6,6 +6,7 @@ from textual.widget import Widget
 from textual.widgets import Footer, Static
 
 from copilot_team.core.interfaces import BaseTaskStoreBackend
+from copilot_team.core.services import TaskService
 from copilot_team.core.settings import Settings
 from copilot_team.tui.screens.chat import ChatPanel
 from copilot_team.tui.screens.settings import SettingsPanel
@@ -57,6 +58,7 @@ class CopilotTeamApp(App):
     ) -> None:
         super().__init__()
         self.task_store = task_store
+        self.task_service = TaskService(task_store)
         self.copilot_client = copilot_client or CopilotClient(
             {"auto_restart": True, "auto_start": True}
         )

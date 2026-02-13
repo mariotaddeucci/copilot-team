@@ -7,58 +7,47 @@ from typing import TYPE_CHECKING
 from copilot.tools import Tool
 
 if TYPE_CHECKING:
-    from copilot_team.core.interfaces import BaseTaskStoreBackend
+    from copilot_team.core.services import TaskService
 
 
-def build_task_tools(task_store: BaseTaskStoreBackend) -> list:
-    """Return a list of Copilot SDK tools backed by *task_store*."""
+def build_task_tools(service: TaskService) -> list:
+    """Return a list of Copilot SDK tools backed by *service*."""
 
     async def _list_stories(args, _inv):
-        status = args.get("status")
-        stories = await task_store.list_stories(status=status)
+        stories = await service.list_stories(status=args.get("status"))
         return [s.model_dump() for s in stories]
 
     async def _get_story(args, _inv):
-        story = await task_store.get_story(args["id"])
+        story = await service.get_story(args["id"])
         return story.model_dump()
 
     async def _create_story(args, _inv):
-        from copilot_team.core.models import Story
-
-        story = Story(**args)
-        await task_store.put_story(story)
+        story = await service.create_story(args)
         return story.model_dump()
 
     async def _update_story(args, _inv):
         story_id = args.pop("id")
-        existing = await task_store.get_story(story_id)
-        updated = existing.model_copy(update=args)
-        await task_store.put_story(updated)
-        return updated.model_dump()
+        story = await service.update_story(story_id, args)
+        return story.model_dump()
 
     async def _list_tasks(args, _inv):
-        status = args.get("status")
-        story_id = args.get("story_id")
-        tasks = await task_store.list_tasks(status=status, story_id=story_id)
+        tasks = await service.list_tasks(
+            status=args.get("status"), story_id=args.get("story_id")
+        )
         return [t.model_dump() for t in tasks]
 
     async def _get_task(args, _inv):
-        task = await task_store.get_task(args["id"])
+        task = await service.get_task(args["id"])
         return task.model_dump()
 
     async def _create_task(args, _inv):
-        from copilot_team.core.models import Task
-
-        task = Task(**args)
-        await task_store.put_task(task)
+        task = await service.create_task(args)
         return task.model_dump()
 
     async def _update_task(args, _inv):
         task_id = args.pop("id")
-        existing = await task_store.get_task(task_id)
-        updated = existing.model_copy(update=args)
-        await task_store.put_task(updated)
-        return updated.model_dump()
+        task = await service.update_task(task_id, args)
+        return task.model_dump()
 
     return [
         Tool(

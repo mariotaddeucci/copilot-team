@@ -39,8 +39,8 @@ class ChatPanel(Vertical):
         return self.app.copilot_client  # type: ignore[attr-defined]
 
     @property
-    def _task_store(self):
-        return self.app.task_store  # type: ignore[attr-defined]
+    def _task_service(self):
+        return self.app.task_service  # type: ignore[attr-defined]
 
     @property
     def _settings(self):
@@ -149,7 +149,7 @@ class ChatPanel(Vertical):
 
         model = self._get_selected_model()
         config: dict = {
-            "tools": build_task_tools(self._task_store),
+            "tools": build_task_tools(self._task_service),
         }
         if model:
             config["model"] = model
