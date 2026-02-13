@@ -5,40 +5,41 @@ from copilot_team.core.models import Story, StoryStatus, Task, TaskStatus
 
 class BaseTaskStoreBackend(ABC):
     @abstractmethod
-    def put_story(self, story: Story) -> None: ...
+    async def put_story(self, story: Story) -> None: ...
 
     @abstractmethod
-    def get_story(self, id: str) -> Story: ...
+    async def get_story(self, id: str) -> Story: ...
 
     @abstractmethod
-    def list_stories(self, status: StoryStatus | None = None) -> list[Story]: ...
+    async def list_stories(self, status: StoryStatus | None = None) -> list[Story]: ...
 
     @abstractmethod
-    def put_task(self, task: Task) -> None: ...
+    async def put_task(self, task: Task) -> None: ...
 
     @abstractmethod
-    def get_task(self, id: str) -> Task: ...
+    async def get_task(self, id: str) -> Task: ...
 
     @abstractmethod
-    def list_tasks(
+    async def list_tasks(
         self, status: TaskStatus | None = None, story_id: str | None = None
     ) -> list[Task]: ...
 
-    def get_next_task(self, status: TaskStatus) -> Task | None:
+    async def get_next_task(self, status: TaskStatus) -> Task | None:
         next_task = next(
-            (task for task in self.list_tasks(status=status)),
+            (task for task in await self.list_tasks(status=status)),
             None,
         )
         return next_task
 
-    def list_non_completed_stories(self) -> list[Story]:
+    async def list_non_completed_stories(self) -> list[Story]:
         stories = []
         status_search: list[StoryStatus] = [
             "in_progress",
             "ready",
             "planning",
-            "created",
+            "pending",
         ]
         for status in status_search:
-            stories.extend(self.list_stories(status=status))
+            partia_stories = await self.list_stories(status=status)
+            stories.extend(partia_stories)
         return stories
