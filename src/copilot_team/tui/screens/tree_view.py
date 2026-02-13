@@ -121,6 +121,11 @@ class TaskRow(Static):
         self.update(self._render_label())
         return self._expanded
 
+    def collapse_checklist(self) -> None:
+        if self._expanded:
+            self._expanded = False
+            self.update(self._render_label())
+
     @property
     def task_data(self) -> Task:
         return self._data
@@ -255,9 +260,7 @@ class TreeViewPanel(Vertical):
             if not expanded:
                 for row in self.query(".task-row"):
                     if isinstance(row, TaskRow) and row.task_data.story_id == story_id:
-                        if row._expanded:
-                            row._expanded = False
-                            row.update(row._render_label())
+                        row.collapse_checklist()
         elif isinstance(widget, TaskRow):
             task = widget.task_data
             if task.checklist:
