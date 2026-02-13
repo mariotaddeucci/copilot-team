@@ -2,7 +2,8 @@ from copilot_team.tui.app import CopilotTeamApp
 from copilot_team.tui.screens.chat import ChatPanel
 from copilot_team.tui.screens.story_form import StoryFormPanel
 from copilot_team.tui.screens.task_form import TaskFormPanel
-from copilot_team.tui.screens.tree_view import TreeViewPanel, StoryHeader, TaskRow, ChecklistRow
+from copilot_team.tui.screens.tree_view import TreeViewPanel, StoryHeader, TaskRow
+from copilot_team.tui.pydantic_form import SubModelList
 from tests.conftest import InMemoryTaskStoreBackend
 
 from textual.widgets import Input, TextArea
@@ -127,10 +128,10 @@ async def test_story_form_save(task_store: InMemoryTaskStoreBackend):
         btn.press()
         await pilot.pause()
 
-        name_input = app.query_one("#story-name", Input)
+        name_input = app.query_one("#form-name", Input)
         name_input.value = "New Story"
 
-        desc = app.query_one("#story-description", TextArea)
+        desc = app.query_one("#form-description", TextArea)
         desc.load_text("A new test story")
 
         save_btn = app.query_one("#btn-save")
@@ -179,8 +180,8 @@ async def test_task_form_has_agent_and_repo_fields(task_store: InMemoryTaskStore
         app.show_task_form()
         await pilot.pause()
 
-        assert app.query_one("#task-agent", Input)
-        assert app.query_one("#task-repo", Input)
+        assert app.query_one("#form-agent", Input)
+        assert app.query_one("#form-repository_name", Input)
 
 
 async def test_task_form_has_checklist_editor(task_store: InMemoryTaskStoreBackend):
@@ -190,9 +191,9 @@ async def test_task_form_has_checklist_editor(task_store: InMemoryTaskStoreBacke
         app.show_task_form()
         await pilot.pause()
 
-        assert app.query_one("#checklist-container")
-        assert app.query_one("#checklist-new-input", Input)
-        assert app.query_one("#btn-add-checklist")
+        assert app.query_one(SubModelList)
+        assert app.query_one("#submodel-checklist-new-description", Input)
+        assert app.query_one("#submodel-checklist-btn-add")
 
 
 async def test_unassigned_tasks_section(task_store: InMemoryTaskStoreBackend):

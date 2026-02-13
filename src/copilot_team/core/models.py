@@ -9,16 +9,20 @@ TaskStatus = Literal["pending", "planning", "ready", "in_progress", "completed"]
 
 
 class TaskChecklistItem(BaseModel):
-    description: str
-    completed: bool = False
+    """Item de checklist de uma tarefa."""
+
+    description: str = Field(description="Descrição do item do checklist")
+    completed: bool = Field(default=False, description="Item concluído")
 
 
 @total_ordering
 class Story(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
-    description: str
-    status: StoryStatus = "pending"
+    """História do projeto."""
+
+    id: str = Field(default_factory=lambda: str(uuid4()), description="Identificador único da história")
+    name: str = Field(description="Nome da história")
+    description: str = Field(description="Descrição detalhada da história", json_schema_extra={"widget": "textarea"})
+    status: StoryStatus = Field(default="pending", description="Status atual da história")
 
     @property
     def priority(self) -> int:
@@ -39,15 +43,17 @@ class Story(BaseModel):
 
 @total_ordering
 class Task(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
-    agent: str | None = None
-    status: TaskStatus = "pending"
-    description: str
-    checklist: list[TaskChecklistItem] = Field(default_factory=list)
-    repository_name: str | None = None
-    branch_name: str | None = None
-    story_id: str | None = None
+    """Tarefa do projeto."""
+
+    id: str = Field(default_factory=lambda: str(uuid4()), description="Identificador único da tarefa")
+    name: str = Field(description="Nome da tarefa")
+    description: str = Field(description="Descrição detalhada da tarefa", json_schema_extra={"widget": "textarea"})
+    agent: str | None = Field(default=None, description="Agente responsável pela tarefa")
+    status: TaskStatus = Field(default="pending", description="Status atual da tarefa")
+    repository_name: str | None = Field(default=None, description="Nome do repositório")
+    branch_name: str | None = Field(default=None, description="Nome da branch")
+    story_id: str | None = Field(default=None, description="ID da história associada")
+    checklist: list[TaskChecklistItem] = Field(default_factory=list, description="Lista de itens do checklist")
 
     @property
     def priority(self) -> int:
@@ -67,12 +73,14 @@ class Task(BaseModel):
 
 
 class Agent(BaseModel):
-    id: str
-    name: str | None = None
-    description: str
-    prompt: str
-    model: str | None = None
-    tools: list[str] = Field(default_factory=list)
+    """Configuração de um agente."""
+
+    id: str = Field(description="Identificador único do agente")
+    name: str | None = Field(default=None, description="Nome de exibição do agente")
+    description: str = Field(description="Descrição do agente", json_schema_extra={"widget": "textarea"})
+    prompt: str = Field(description="Prompt do agente", json_schema_extra={"widget": "textarea"})
+    model: str | None = Field(default=None, description="Modelo de IA utilizado")
+    tools: list[str] = Field(default_factory=list, description="Lista de ferramentas disponíveis")
 
     @property
     def display_name(self) -> str:
@@ -80,10 +88,12 @@ class Agent(BaseModel):
 
 
 class AgentSkill(BaseModel):
-    id: str
-    name: str | None = None
-    description: str | None = None
-    prompt: str
+    """Habilidade de um agente."""
+
+    id: str = Field(description="Identificador único da habilidade")
+    name: str | None = Field(default=None, description="Nome da habilidade")
+    description: str | None = Field(default=None, description="Descrição da habilidade")
+    prompt: str = Field(description="Prompt da habilidade", json_schema_extra={"widget": "textarea"})
 
     @property
     def display_name(self) -> str:
